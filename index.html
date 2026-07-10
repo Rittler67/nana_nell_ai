@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grove Guide — Moon Druid Dashboard</title>
+<style>
+:root{
+  --bg:#f2f5ee; --surface:#ffffff; --card:#f7faf4; --line:#d8e0d2;
+  --ink:#1e2a1e; --ink2:#4a5a48; --muted:#71816e;
+  --leaf:#2e7d3c; --leaf-soft:#e3f0e2;
+  --amber:#a05f00; --amber-bg:#fdf1dc; --amber-line:#e8c98a;
+  --good:#2e7d3c; --warn:#8a6100; --warn-bg:#fbf3dc; --crit:#b3402c; --crit-bg:#fbe7e2;
+  --pip:#4c9e5a; --pip-off:#cfd9ca;
+  --shadow:0 1px 3px rgba(20,40,20,.12); --btn-ink:#ffffff;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#131a13; --surface:#1b241b; --card:#212d21; --line:#324232;
+    --ink:#e7ede3; --ink2:#b9c6b4; --muted:#8ea189;
+    --leaf:#6fbf73; --leaf-soft:#24361f;
+    --amber:#e8a33d; --amber-bg:#2c2414; --amber-line:#6b5320;
+    --good:#6fbf73; --warn:#e0b34d; --warn-bg:#2c2612; --crit:#e07a5f; --crit-bg:#33201b;
+    --pip:#6fbf73; --pip-off:#3a473a;
+    --shadow:0 1px 3px rgba(0,0,0,.4); --btn-ink:#10240f;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131a13; --surface:#1b241b; --card:#212d21; --line:#324232;
+  --ink:#e7ede3; --ink2:#b9c6b4; --muted:#8ea189;
+  --leaf:#6fbf73; --leaf-soft:#24361f;
+  --amber:#e8a33d; --amber-bg:#2c2414; --amber-line:#6b5320;
+  --good:#6fbf73; --warn:#e0b34d; --warn-bg:#2c2612; --crit:#e07a5f; --crit-bg:#33201b;
+  --pip:#6fbf73; --pip-off:#3a473a;
+  --shadow:0 1px 3px rgba(0,0,0,.4); --btn-ink:#10240f;
+}
+:root[data-theme="light"]{
+  --bg:#f2f5ee; --surface:#ffffff; --card:#f7faf4; --line:#d8e0d2;
+  --ink:#1e2a1e; --ink2:#4a5a48; --muted:#71816e;
+  --leaf:#2e7d3c; --leaf-soft:#e3f0e2;
+  --amber:#a05f00; --amber-bg:#fdf1dc; --amber-line:#e8c98a;
+  --good:#2e7d3c; --warn:#8a6100; --warn-bg:#fbf3dc; --crit:#b3402c; --crit-bg:#fbe7e2;
+  --pip:#4c9e5a; --pip-off:#cfd9ca;
+  --shadow:0 1px 3px rgba(20,40,20,.12); --btn-ink:#ffffff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  padding-bottom:calc(64px + env(safe-area-inset-bottom));
+  -webkit-tap-highlight-color:transparent;
+}
+button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+input[type=number]{width:64px;text-align:center}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:20px 0 8px}
+.wrap{max-width:640px;margin:0 auto;padding:0 12px}
+
+/* top bar */
+#stickyTop{position:sticky;top:0;z-index:30}
+#topbar{background:var(--surface);border-bottom:1px solid var(--line);box-shadow:var(--shadow)}
+#topbar .wrap{display:flex;align-items:center;gap:8px;padding:8px 12px;flex-wrap:wrap}
+#charTitle{font-weight:700;font-size:15px;margin-right:auto;line-height:1.2}
+#charTitle small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.pill{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600;white-space:nowrap}
+.pill.crit{border-color:var(--crit);color:var(--crit);background:var(--crit-bg)}
+.pill.warn{border-color:var(--warn);color:var(--warn);background:var(--warn-bg)}
+
+/* dice bar */
+#diceBar{background:var(--amber-bg);border-bottom:2px solid var(--amber-line)}
+#diceBar .wrap{padding:10px 12px}
+#diceTitle{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--amber)}
+#diceMain{font-size:17px;font-weight:700;margin:2px 0 4px}
+#diceNote{font-size:13px;color:var(--ink2)}
+.rollrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.rollbtn{background:var(--surface);border:1.5px solid var(--amber);color:var(--amber);border-radius:10px;padding:8px 12px;font-weight:700;font-size:15px}
+.rollbtn:active{transform:scale(.97)}
+.rollresult{font-size:15px;font-weight:700;padding:8px 4px}
+.rollresult small{font-weight:400;color:var(--muted)}
+
+/* banners */
+.banner{display:flex;gap:8px;align-items:flex-start;border-radius:10px;padding:10px 12px;margin:10px 0;font-size:14px;border:1px solid}
+.banner.warn{background:var(--warn-bg);border-color:var(--warn);color:var(--ink)}
+.banner.crit{background:var(--crit-bg);border-color:var(--crit);color:var(--ink)}
+.banner.info{background:var(--leaf-soft);border-color:var(--leaf);color:var(--ink)}
+.banner b{display:block}
+.banner .x{margin-left:auto;font-size:18px;color:var(--muted);padding:0 4px}
+
+/* cards & layout */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;box-shadow:var(--shadow)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:8px;margin:10px 0}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.tile .v{font-size:22px;font-weight:800;line-height:1.1}
+.tile .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--leaf);color:var(--btn-ink);border-radius:10px;padding:10px 14px;font-weight:700;font-size:15px}
+.btn.sec{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.small{padding:6px 10px;font-size:13px}
+.btn.danger{background:var(--crit);color:#fff}
+.btn:active{transform:scale(.98)}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.spread{justify-content:space-between}
+.muted{color:var(--muted);font-size:13px}
+.tag{font-size:11px;font-weight:700;border-radius:6px;padding:2px 6px;background:var(--card);border:1px solid var(--line);color:var(--ink2);text-transform:uppercase;letter-spacing:.04em}
+.tag.conc{background:var(--amber-bg);border-color:var(--amber-line);color:var(--amber)}
+
+/* pips */
+.pips{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pip{width:22px;height:22px;border-radius:50%;background:var(--pip);border:2px solid var(--pip);display:inline-block}
+.pip.off{background:transparent;border-color:var(--pip-off)}
+
+/* hp meter */
+.meter{height:14px;border-radius:7px;background:var(--pip-off);overflow:hidden;margin:6px 0}
+.meter>div{height:100%;border-radius:7px;background:var(--good);transition:width .25s}
+.meter.warn>div{background:var(--warn)}
+.meter.crit>div{background:var(--crit)}
+
+/* tabs */
+#bottomNav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+#bottomNav button{flex:1;padding:8px 2px 6px;text-align:center;font-size:11px;color:var(--muted);font-weight:600}
+#bottomNav button .ico{display:block;font-size:20px;line-height:1.2}
+#bottomNav button.on{color:var(--leaf)}
+main section{display:none;padding-bottom:24px}
+main section.on{display:block}
+
+/* spells */
+.spell{border-bottom:1px solid var(--line);padding:10px 0}
+.spell:last-child{border-bottom:none}
+.spell .head{display:flex;align-items:center;gap:8px}
+.spell .name{font-weight:700;flex:1;text-align:left;font-size:15px;padding:2px 0}
+.spell .body{display:none;padding-top:6px;font-size:14px;color:var(--ink2)}
+.spell.open .body{display:block}
+.prep{width:26px;height:26px;border-radius:8px;border:2px solid var(--pip-off);flex:none;font-size:15px;line-height:1}
+.prep.on{background:var(--leaf);border-color:var(--leaf);color:var(--btn-ink)}
+.lvlchips{display:flex;gap:6px;overflow-x:auto;padding:8px 0}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;white-space:nowrap}
+.chip.on{background:var(--leaf);border-color:var(--leaf);color:var(--btn-ink)}
+
+/* turn checklist */
+.turnchips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.turnchip{border:1.5px solid var(--line);border-radius:10px;padding:10px;background:var(--card);text-align:left}
+.turnchip .t{font-weight:700;font-size:14px}
+.turnchip .h{font-size:12px;color:var(--muted);margin-top:2px}
+.turnchip.used{opacity:.45;text-decoration:line-through}
+
+/* beast cards */
+.beast .stats{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--ink2);margin:4px 0}
+.atk{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px;margin:6px 0;font-size:14px}
+.atk b{color:var(--amber)}
+
+/* log & party */
+.logitem{font-size:13px;border-bottom:1px solid var(--line);padding:6px 0;color:var(--ink2)}
+.logitem time{color:var(--muted);font-size:11px;margin-right:6px}
+textarea{width:100%;min-height:120px;resize:vertical}
+.partyrow{display:flex;gap:6px;margin:6px 0}
+.partyrow input:first-child{width:35%}
+.partyrow input:nth-child(2){flex:1}
+details.ref{margin:8px 0}
+details.ref summary{font-weight:700;cursor:pointer;padding:4px 0}
+.d20row{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:7px 0;font-size:14px}
+.d20row .nm{flex:1}
+.d20row .mod{font-weight:800;width:44px;text-align:right}
+.profbox{width:20px;height:20px;border-radius:6px;border:2px solid var(--pip-off);flex:none}
+.profbox.on{background:var(--leaf);border-color:var(--leaf)}
+</style>
+</head>
+<body>
+
+<div id="stickyTop">
+<header id="topbar"><div class="wrap">
+  <div id="charTitle"></div>
+  <span class="pill" id="hpPill"></span>
+  <span class="pill" id="acPill"></span>
+  <span class="pill" id="formPill" style="display:none"></span>
+  <span class="pill" id="concPill" style="display:none"></span>
+</div></header>
+
+<div id="diceBar"><div class="wrap">
+  <div id="diceTitle">🎲 What to roll</div>
+  <div id="diceMain">Pick a spell, attack, or check below</div>
+  <div id="diceNote"></div>
+  <div class="rollrow" id="diceRolls"></div>
+</div></div>
+</div>
+
+<div class="wrap" id="banners"></div>
+
+<main class="wrap">
+
+<!-- ============ COMBAT ============ -->
+<section id="tab-combat">
+  <h2>My Turn</h2>
+  <div class="card">
+    <div class="turnchips" id="turnChips"></div>
+    <div class="row spread" style="margin-top:10px">
+      <button class="btn small" id="newTurnBtn">🔄 New turn</button>
+      <span class="muted">Tap each as you use it</span>
+    </div>
+  </div>
+
+  <div id="combatForm"></div>
+
+  <h2>Checks &amp; Saves — always d20 + the number</h2>
+  <div class="card">
+    <div class="row" style="margin-bottom:6px">
+      <button class="chip advchip" data-adv="norm">Normal</button>
+      <button class="chip advchip" data-adv="adv">Advantage</button>
+      <button class="chip advchip" data-adv="dis">Disadvantage</button>
+    </div>
+    <div class="muted" style="margin-bottom:4px">Advantage/disadvantage = roll the d20 twice, keep the better/worse. Tap a row to send it to the dice bar. ☑ = proficient (tap the box to toggle).</div>
+    <div id="saveList"></div>
+    <details class="ref"><summary>Skills</summary><div id="skillList"></div></details>
+  </div>
+
+  <h2>Damage in — quick buttons</h2>
+  <div class="card">
+    <div class="row">
+      <span class="muted">I just took…</span>
+      <button class="btn sec small dmgbtn" data-d="1">1</button>
+      <button class="btn sec small dmgbtn" data-d="5">5</button>
+      <button class="btn sec small dmgbtn" data-d="10">10</button>
+      <input type="number" id="dmgCustom" placeholder="#" min="1" style="width:56px">
+      <button class="btn small" id="dmgApply">Apply</button>
+      <button class="btn sec small" id="healBtnQuick">💚 Heal…</button>
+    </div>
+    <div class="muted" style="margin-top:6px">Damage hits your beast form first if you're shifted; leftover carries to your real HP (that's the rule).</div>
+  </div>
+</section>
+
+<!-- ============ SPELLS ============ -->
+<section id="tab-spells">
+  <h2>Spell Slots — tap a pip to spend/restore</h2>
+  <div class="card" id="slotCard"></div>
+  <div class="card">
+    <div class="row">
+      <input type="search" id="spellSearch" placeholder="Search spells…" style="flex:1">
+      <button class="chip" id="prepOnly">Prepared ✓</button>
+    </div>
+    <div class="lvlchips" id="lvlChips"></div>
+    <div class="muted" id="prepCount"></div>
+    <div id="spellList"></div>
+  </div>
+</section>
+
+<!-- ============ SHAPES ============ -->
+<section id="tab-shapes">
+  <h2>Wild Shape</h2>
+  <div class="card">
+    <div class="row spread">
+      <div><b>Uses</b> <span class="muted">(regain on any rest)</span></div>
+      <div class="pips" id="wsPips"></div>
+    </div>
+    <div class="muted" style="margin-top:8px">
+      Circle of the Moon: shift as a <b>bonus action</b>, beasts up to <b>CR 2</b> (no flying speed until level 8).
+      You keep your mind, personality, INT/WIS/CHA; you use the beast's body, STR/DEX/CON, HP and attacks.
+      You can't cast spells while shifted, but concentration keeps running.
+    </div>
+    <div id="formPanel"></div>
+  </div>
+  <h2>Beast Forms — tap Transform</h2>
+  <div id="beastList"></div>
+</section>
+
+<!-- ============ ME ============ -->
+<section id="tab-me">
+  <h2>Rest</h2>
+  <div class="card">
+    <div class="row">
+      <button class="btn sec" id="shortRestBtn">🌤 Short Rest</button>
+      <button class="btn" id="longRestBtn">🌙 Long Rest</button>
+    </div>
+    <div class="muted" style="margin-top:6px">Firbolgs don't sleep — a long rest is <b>4 hours of trance-like meditation</b>. Short rest: spend Hit Dice (d8 + CON each) to heal, and Wild Shape &amp; firbolg gifts come back.</div>
+    <div class="row" style="margin-top:10px">
+      <span class="muted">Hit Dice (short rest healing):</span>
+      <div class="pips" id="hdPips"></div>
+      <button class="btn sec small" id="spendHD">Spend 1 → roll d8+<span id="hdCon"></span></button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <span class="muted">⏰ Remind me to check resources in</span>
+      <input type="number" id="timerMin" value="90" min="5" step="5"> min
+      <button class="btn sec small" id="timerBtn">Start</button>
+      <span class="muted" id="timerStatus"></span>
+    </div>
+  </div>
+
+  <h2>Hit Points</h2>
+  <div class="card">
+    <div class="row spread">
+      <b id="hpBig" style="font-size:24px"></b>
+      <span class="row">Max <input type="number" id="hpMaxIn" min="1"></span>
+    </div>
+    <div class="meter" id="hpMeter"><div></div></div>
+    <div class="row">
+      <button class="btn sec small dmgbtn" data-d="1">−1</button>
+      <button class="btn sec small dmgbtn" data-d="5">−5</button>
+      <button class="btn sec small healbtn" data-h="1">+1</button>
+      <button class="btn sec small healbtn" data-h="5">+5</button>
+      <button class="btn sec small" id="fullHeal">Full</button>
+    </div>
+  </div>
+
+  <h2>Abilities &amp; Numbers</h2>
+  <div class="card">
+    <div class="row" style="margin-bottom:8px">
+      <span>Name <input id="nameIn" style="width:130px"></span>
+      <span>Level <input type="number" id="lvlIn" min="1" max="20"></span>
+      <span>AC <input type="number" id="acIn" min="1"></span>
+    </div>
+    <div class="tiles" id="abTiles"></div>
+    <div class="tiles" id="derivedTiles"></div>
+    <div class="muted">Tap an ability score to edit it. Spell DC = 8 + prof + WIS · Spell attack = prof + WIS · You can prepare level + WIS-mod spells each morning.</div>
+  </div>
+
+  <h2>Firbolg Gifts</h2>
+  <div class="card" id="racialCard"></div>
+
+  <div class="card">
+    <button class="btn sec small" id="themeBtn">🌗 Toggle light/dark</button>
+    <button class="btn danger small" id="resetBtn" style="float:right">Reset everything</button>
+  </div>
+</section>
+
+<!-- ============ NOTES ============ -->
+<section id="tab-notes">
+  <h2>Session Notes</h2>
+  <div class="card">
+    <textarea id="notesArea" placeholder="Quest hooks, loot, that thing Ben said…"></textarea>
+    <div class="muted">Saves automatically on this device.</div>
+  </div>
+  <h2>Party &amp; NPCs</h2>
+  <div class="card">
+    <div id="partyList"></div>
+    <button class="btn sec small" id="addPartyBtn">＋ Add person</button>
+  </div>
+  <h2>Session Log</h2>
+  <div class="card">
+    <div class="row" style="margin-bottom:6px">
+      <input id="logQuick" placeholder="Quick note…" style="flex:1">
+      <button class="btn small" id="logAddBtn">Log</button>
+    </div>
+    <div id="logList"></div>
+    <button class="btn sec small" id="logClearBtn" style="margin-top:8px">Clear log</button>
+  </div>
+</section>
+</main>
+
+<nav id="bottomNav">
+  <button data-tab="combat"><span class="ico">⚔️</span>Combat</button>
+  <button data-tab="spells"><span class="ico">✨</span>Spells</button>
+  <button data-tab="shapes"><span class="ico">🐻</span>Shapes</button>
+  <button data-tab="me"><span class="ico">🧙</span>Me</button>
+  <button data-tab="notes"><span class="ico">📓</span>Notes</button>
+</nav>
+
+<script>
+"use strict";
+/* ============================== DATA ============================== */
+const ABIL = ["str","dex","con","int","wis","cha"];
+const ABIL_NAME = {str:"Strength",dex:"Dexterity",con:"Constitution",int:"Intelligence",wis:"Wisdom",cha:"Charisma"};
+const SKILLS = [
+ ["Athletics","str"],["Acrobatics","dex"],["Stealth","dex"],["Animal Handling","wis"],
+ ["Insight","wis"],["Medicine","wis"],["Perception","wis"],["Survival","wis"],
+ ["Nature","int"],["Arcana","int"],["Investigation","int"],["Persuasion","cha"],["Intimidation","cha"]
+];
+
+/* Spells: SRD druid spells, levels 0–3.
+   dmg/heal use {base, per} dice; cantrip dice scale with character level.
+   save = ability Ben rolls against your DC; atk = you roll d20 + spell attack. */
+const SPELLS = [
+ {n:"Druidcraft",l:0,t:"Action",r:"30 ft",d:"Tiny nature effect: predict the weather, bloom a flower, light or snuff a campfire-sized flame."},
+ {n:"Guidance",l:0,t:"Action",r:"Touch",c:1,d:"Touch a willing creature: it adds 1d4 to one ability check of its choice before the spell ends (1 min).",dice:"1d4 bonus to a check"},
+ {n:"Mending",l:0,t:"1 minute",r:"Touch",d:"Repair a single break or tear in an object."},
+ {n:"Poison Spray",l:0,t:"Action",r:"10 ft",save:"CON",dmg:{base:[1,12],cantrip:1},dt:"poison",d:"Puff of gas. On a failed save the target takes the damage; nothing on a success."},
+ {n:"Produce Flame",l:0,t:"Action",r:"30 ft",atk:"ranged",dmg:{base:[1,8],cantrip:1},dt:"fire",d:"Flame in your palm: sheds light 10 ft, or hurl it as a ranged spell attack."},
+ {n:"Resistance",l:0,t:"Action",r:"Touch",c:1,d:"Touch a willing creature: it adds 1d4 to one saving throw before the spell ends (1 min).",dice:"1d4 bonus to a save"},
+ {n:"Shillelagh",l:0,t:"Bonus action",r:"Touch",d:"Your club/quarterstaff attacks use WISDOM and deal 1d8. Attack: d20 + spell attack; damage 1d8 + WIS.",shill:1},
+ {n:"Thorn Whip",l:0,t:"Action",r:"30 ft",atk:"melee",dmg:{base:[1,6],cantrip:1},dt:"piercing",d:"Vine whip: on a hit, pull a Large-or-smaller target 10 ft closer to you."},
+
+ {n:"Animal Friendship",l:1,t:"Action",r:"30 ft",save:"WIS",d:"Convince a beast (INT ≤ 3) you mean no harm; charmed 24 hours on a failed save."},
+ {n:"Charm Person",l:1,t:"Action",r:"30 ft",save:"WIS",d:"Humanoid is charmed by you for 1 hour (advantage on the save if you're fighting it)."},
+ {n:"Create or Destroy Water",l:1,t:"Action",r:"30 ft",d:"Create or destroy up to 10 gallons of water."},
+ {n:"Cure Wounds",l:1,t:"Action",r:"Touch",heal:{base:[1,8],per:[1,8]},d:"Touch a creature: it regains 1d8 + WIS HP. +1d8 per slot level above 1st."},
+ {n:"Detect Magic",l:1,t:"Action",r:"Self",c:1,rit:1,d:"Sense magic within 30 ft for 10 min. You can also cast this free once per short rest (Firbolg Magic)."},
+ {n:"Entangle",l:1,t:"Action",r:"90 ft",save:"STR",c:1,d:"20-ft square of grasping weeds: failed save = RESTRAINED (attacks vs. them have advantage). STR check vs your DC to escape."},
+ {n:"Faerie Fire",l:1,t:"Action",r:"60 ft",save:"DEX",c:1,d:"20-ft cube glows: everyone who fails is outlined — attacks against them have ADVANTAGE and they can't hide. Great before the fighter's turn."},
+ {n:"Fog Cloud",l:1,t:"Action",r:"120 ft",c:1,d:"20-ft-radius sphere of fog, heavily obscured. +20 ft radius per slot level."},
+ {n:"Goodberry",l:1,t:"Action",r:"Touch",d:"10 berries; eating one takes an action and restores 1 HP and feeds a person for a day. Cast with leftover slots before bed!",dice:"10 berries × 1 HP"},
+ {n:"Healing Word",l:1,t:"Bonus action",r:"60 ft",heal:{base:[1,4],per:[1,4]},d:"BONUS ACTION ranged heal: 1d4 + WIS. Perfect for picking allies up off the floor. +1d4 per slot level."},
+ {n:"Jump",l:1,t:"Action",r:"Touch",d:"Triple one creature's jump distance for 1 min."},
+ {n:"Longstrider",l:1,t:"Action",r:"Touch",d:"+10 ft speed for 1 hour, no concentration."},
+ {n:"Purify Food and Drink",l:1,t:"Action",r:"10 ft",rit:1,d:"Make food and drink safe."},
+ {n:"Speak with Animals",l:1,t:"Action",r:"Self",rit:1,d:"Talk with beasts for 10 min. Cast as ritual (takes 10 extra min, no slot). You can also always talk to them via Speech of Beast and Leaf!"},
+ {n:"Thunderwave",l:1,t:"Action",r:"Self (15-ft cube)",save:"CON",dmg:{base:[2,8],per:[1,8]},dt:"thunder",d:"Boom around you: failed save = full damage and pushed 10 ft away; success = half, no push. Audible 300 ft."},
+
+ {n:"Animal Messenger",l:2,t:"Action",r:"30 ft",rit:1,d:"Send a Tiny beast with a 25-word message to a place you've visited."},
+ {n:"Barkskin",l:2,t:"Action",r:"Touch",c:1,d:"Target's AC can't be below 16 for 1 hour. Works in Wild Shape — cast it on yourself before shifting!"},
+ {n:"Darkvision",l:2,t:"Action",r:"Touch",d:"Grant 60-ft darkvision for 8 hours."},
+ {n:"Enhance Ability",l:2,t:"Action",r:"Touch",c:1,d:"Give a creature ADVANTAGE on one ability's checks for 1 hour (Bear = also 2d6 temp HP)."},
+ {n:"Find Traps",l:2,t:"Action",r:"120 ft",d:"Sense whether a trap is present in line of sight."},
+ {n:"Flaming Sphere",l:2,t:"Action",r:"60 ft",save:"DEX",c:1,dmg:{base:[2,6],per:[1,6]},dt:"fire",d:"5-ft ball of fire. A creature ending its turn next to it saves or burns (half on success). BONUS ACTION each turn: move it 30 ft / ram someone."},
+ {n:"Gust of Wind",l:2,t:"Action",r:"Self (60-ft line)",save:"STR",c:1,d:"Line of wind: failed save = pushed 15 ft away from you; costs 2 ft of movement per 1 ft moved toward you."},
+ {n:"Heat Metal",l:2,t:"Action",r:"60 ft",c:1,dmg:{base:[2,8],per:[1,8]},dt:"fire",d:"NO SAVE vs the damage — a creature touching the metal just takes 2d8 fire, and saves (CON) or drops the weapon. BONUS ACTION each turn to burn again. Nasty vs armored foes (they can't drop their armor!)."},
+ {n:"Hold Person",l:2,t:"Action",r:"60 ft",save:"WIS",c:1,d:"Humanoid is PARALYZED (melee hits are auto-crits!). It re-saves at the end of each of its turns. +1 target per slot level."},
+ {n:"Lesser Restoration",l:2,t:"Action",r:"Touch",d:"End one disease or one condition: blinded, deafened, paralyzed, or poisoned."},
+ {n:"Locate Object",l:2,t:"Action",r:"Self",c:1,d:"Sense a familiar object within 1,000 ft."},
+ {n:"Moonbeam",l:2,t:"Action",r:"120 ft",save:"CON",c:1,dmg:{base:[2,10],per:[1,10]},dt:"radiant",d:"Your signature! 5-ft-radius beam. A creature entering it or starting its turn there saves: full radiant damage on a fail, half on a success. ACTION each turn: move it 60 ft. Shapechangers save at disadvantage."},
+ {n:"Pass without Trace",l:2,t:"Action",r:"Self",c:1,d:"You and all allies within 30 ft get +10 to Stealth and can't be tracked. The whole party sneaks!"},
+ {n:"Protection from Poison",l:2,t:"Action",r:"Touch",d:"Neutralize one poison; 1 hour of advantage vs poison and resistance to poison damage."},
+ {n:"Spike Growth",l:2,t:"Action",r:"150 ft",c:1,dmg:{base:[2,4]},dt:"piercing",d:"20-ft radius of hidden spikes (camouflaged — Perception to notice): 2d4 piercing for EVERY 5 FEET a creature moves in it. No save. Combos with pushes and fear."},
+
+ {n:"Call Lightning",l:3,t:"Action",r:"120 ft",save:"DEX",c:1,dmg:{base:[3,10],per:[1,10]},dt:"lightning",d:"Storm cloud overhead: bolt hits a point, everyone within 5 ft saves (half on success). EACH TURN: call another bolt as your action, for 10 minutes. +1d10 if there's already a storm."},
+ {n:"Conjure Animals",l:3,t:"Action",r:"60 ft",c:1,d:"Summon fey beasts: 8× CR ¼ (wolves!), 4× CR ½, 2× CR 1, or 1× CR 2. Ben picks the exact beasts — coordinate with him. They act on their own turn and obey you."},
+ {n:"Daylight",l:3,t:"Action",r:"60 ft",d:"60-ft radius of bright light for 1 hour. Dispels 3rd-level-or-lower magical darkness."},
+ {n:"Dispel Magic",l:3,t:"Action",r:"120 ft",d:"End a spell of 3rd level or lower automatically; higher = roll d20 + WIS vs DC 10 + spell level."},
+ {n:"Meld into Stone",l:3,t:"Action",r:"Touch",rit:1,d:"Step into a stone wall and hide inside it for up to 8 hours."},
+ {n:"Plant Growth",l:3,t:"Action / 8 hours",r:"150 ft",d:"Instant: 100-ft radius becomes overgrown — creatures spend 4 ft of movement per 1 ft (quarter speed!). No concentration, no save. Great battlefield control."},
+ {n:"Protection from Energy",l:3,t:"Action",r:"Touch",c:1,d:"Resistance to acid, cold, fire, lightning, or thunder for 1 hour."},
+ {n:"Sleet Storm",l:3,t:"Action",r:"150 ft",save:"DEX",c:1,d:"40-ft radius: heavily obscured, difficult terrain, failed save = PRONE. Enemy casters must make DC-15 concentration checks. Extinguishes flames."},
+ {n:"Speak with Plants",l:3,t:"Action",r:"Self",d:"Talk with plants within 30 ft for 10 min; make difficult plant terrain passable."},
+ {n:"Water Breathing",l:3,t:"Action",r:"30 ft",rit:1,d:"Up to 10 creatures breathe underwater for 24 hours. Ritual — no slot needed."},
+ {n:"Water Walk",l:3,t:"Action",r:"30 ft",rit:1,d:"Up to 10 creatures walk on liquid for 1 hour. Ritual."},
+ {n:"Wind Wall",l:3,t:"Action",r:"120 ft",save:"STR",c:1,dmg:{base:[3,8]},dt:"bludgeoning",d:"Wall of wind 50 ft long, 15 ft high: 3d8 on a failed save (half on success). Arrows and gases can't cross it. Keeps flyers honest."}
+];
+
+/* Beast forms — SRD 5.1 stat blocks, CR ≤ 2, no fly speed (Moon druid level 6). */
+const BEASTS = [
+ {n:"Brown Bear",cr:"1",ac:11,hp:34,spd:"40 ft, climb 30 ft",sk:"Perception +3",tr:"Keen Smell (adv. on smell-based Perception)",
+  atks:[{n:"Multiattack: Bite + Claws",note:"One of each per Attack action"},
+        {n:"Bite",hit:6,dmg:"1d8+4",dt:"piercing"},{n:"Claws",hit:6,dmg:"2d6+4",dt:"slashing"}],
+  tip:"Your bread-and-butter brawler: two attacks, big HP pool to soak damage."},
+ {n:"Polar Bear",cr:"2",ac:12,hp:42,spd:"40 ft, swim 30 ft",sk:"Perception +3",tr:"Keen Smell",
+  atks:[{n:"Multiattack: Bite + Claws",note:"One of each per Attack action"},
+        {n:"Bite",hit:7,dmg:"1d8+5",dt:"piercing"},{n:"Claws",hit:7,dmg:"2d6+5",dt:"slashing"}],
+  tip:"The brown bear's bigger cousin — your hardest-hitting form, and it swims."},
+ {n:"Dire Wolf",cr:"1",ac:14,hp:37,spd:"50 ft",sk:"Perception +3, Stealth +4",
+  tr:"Keen Hearing & Smell · Pack Tactics (adv. on attacks when an ally is within 5 ft of the target)",
+  atks:[{n:"Bite",hit:5,dmg:"2d6+3",dt:"piercing",note:"Target: DC 13 STR save or knocked PRONE"}],
+  tip:"Fight next to an ally for advantage; knock enemies prone so the melee crew feasts."},
+ {n:"Giant Spider",cr:"1",ac:14,hp:26,spd:"30 ft, climb 30 ft",sk:"Stealth +7",
+  tr:"Spider Climb (walk on walls/ceilings) · Web Sense · Web Walker · Blindsight 10 ft",
+  atks:[{n:"Bite",hit:5,dmg:"1d8+3",dt:"piercing",note:"+ 2d8 poison (DC 11 CON save for half)"},
+        {n:"Web (recharge 5–6)",hit:5,dmg:"—",note:"Ranged 30/60 ft: target RESTRAINED (DC 12 STR to break out)"}],
+  tip:"Ceiling ambushes and webbing the big scary thing. Sneaky at +7 Stealth."},
+ {n:"Giant Constrictor Snake",cr:"2",ac:12,hp:60,spd:"30 ft, swim 30 ft",sk:"Perception +2",tr:"Blindsight 10 ft",
+  atks:[{n:"Bite",hit:6,dmg:"2d6+4",dt:"piercing"},
+        {n:"Constrict",hit:6,dmg:"2d8+4",dt:"bludgeoning",note:"Target GRAPPLED (escape DC 16) and RESTRAINED while grappled"}],
+  tip:"60 HP of nope. Grapple the enemy caster and squeeze — restrained means advantage for everyone."},
+ {n:"Giant Elk",cr:"2",ac:14,hp:42,spd:"60 ft",sk:"Perception +4",
+  tr:"Charge: move 20 ft straight at a target, its Ram deals +2d6 and target saves DC 14 STR or falls PRONE",
+  atks:[{n:"Ram",hit:6,dmg:"2d6+4",dt:"bludgeoning",note:"+2d6 and prone-check on a charge"},
+        {n:"Hooves (vs prone only)",hit:6,dmg:"4d8+4",dt:"bludgeoning"}],
+  tip:"60-ft speed! Charge in, knock them down, stomp for 4d8+4. Also a fast taxi."},
+ {n:"Saber-Toothed Tiger",cr:"2",ac:12,hp:52,spd:"40 ft",sk:"Perception +3, Stealth +6",
+  tr:"Keen Smell · Pounce: move 20 ft straight, hit with Claw → target saves DC 14 STR or is knocked PRONE, then you Bite it as a BONUS action",
+  atks:[{n:"Bite",hit:6,dmg:"1d10+5",dt:"piercing"},{n:"Claw",hit:6,dmg:"2d6+5",dt:"slashing"}],
+  tip:"Stealth in, pounce, and potentially claw + free bite in one turn. Burst damage king."},
+ {n:"Giant Boar",cr:"2",ac:12,hp:42,spd:"40 ft",
+  tr:"Charge: move 20 ft straight → Tusk deals +2d6 and DC 13 STR save or PRONE · Relentless (1/short rest): drop to 0 HP → drop to 1 HP instead",
+  atks:[{n:"Tusk",hit:5,dmg:"2d6+3",dt:"slashing"}],
+  tip:"Relentless keeps the form alive one extra hit. Great line-breaker."},
+ {n:"Giant Hyena",cr:"1",ac:12,hp:45,spd:"50 ft",sk:"Perception +3",
+  tr:"Rampage: when you drop a creature to 0 HP with a bite, BONUS action to move half speed and bite again",
+  atks:[{n:"Bite",hit:5,dmg:"2d6+3",dt:"piercing"}],
+  tip:"Mow through groups of weak enemies — every kill chains into another bite."},
+ {n:"Giant Octopus",cr:"1",ac:11,hp:52,spd:"10 ft, swim 60 ft",sk:"Perception +4, Stealth +5",
+  tr:"Hold Breath (1 hr out of water) · Underwater Camouflage · Water Breathing · Ink Cloud (1/day, escape trick)",
+  atks:[{n:"Tentacles",hit:5,dmg:"2d6+3",dt:"bludgeoning",note:"Target GRAPPLED (escape DC 16) and RESTRAINED"}],
+  tip:"The water fight answer. Grapple and drag things around; ink and jet away if it goes bad."},
+ {n:"Panther",cr:"¼",ac:12,hp:13,spd:"50 ft, climb 40 ft",sk:"Perception +4, Stealth +6",
+  tr:"Keen Smell · Pounce (move 20 ft straight, Claw hit → DC 12 STR or PRONE, then bonus-action Bite)",
+  atks:[{n:"Bite",hit:4,dmg:"1d6+2",dt:"piercing"},{n:"Claw",hit:4,dmg:"1d4+2",dt:"slashing"}],
+  tip:"Your scout: fast, quiet, climbs. Cheap form for exploring — save the bears for battle."},
+ {n:"Wolf",cr:"¼",ac:13,hp:11,spd:"40 ft",sk:"Perception +3, Stealth +4",
+  tr:"Keen Hearing & Smell · Pack Tactics",
+  atks:[{n:"Bite",hit:4,dmg:"2d4+2",dt:"piercing",note:"DC 11 STR save or PRONE"}],
+  tip:"Classic scout/skirmisher; blends in where a panther might not."}
+];
+
+/* ============================== STATE ============================== */
+const KEY="groveGuide.v1";
+const DEFAULTS = {
+  name:"My Firbolg", level:6,
+  ab:{str:12,dex:14,con:14,int:10,wis:18,cha:12},
+  hpMax:45, hp:45, ac:16,
+  slots:{1:{max:4,used:0},2:{max:3,used:0},3:{max:3,used:0}},
+  ws:{max:2,used:0}, hd:{used:0},
+  racial:{hidden:0, detect:0, disguise:0},
+  prepared:["Produce Flame","Shillelagh","Guidance","Healing Word","Cure Wounds","Entangle","Faerie Fire","Thunderwave","Moonbeam","Pass without Trace","Spike Growth","Call Lightning","Conjure Animals"],
+  skillProf:["Perception","Nature"], saveProf:["int","wis"],
+  conc:null, form:null, formHp:0,
+  turn:{Move:0,Action:0,"Bonus action":0,Reaction:0},
+  notes:"", party:[{name:"Ben",note:"the DM"}], log:[],
+  timerEnd:null, dismissed:{}
+};
+let S = load();
+function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)); return s?Object.assign(structuredClone(DEFAULTS),s):structuredClone(DEFAULTS);}catch(e){return structuredClone(DEFAULTS);} }
+function save(){ localStorage.setItem(KEY,JSON.stringify(S)); }
+
+/* derived numbers */
+const mod = s => Math.floor((s-10)/2);
+const fmt = m => (m>=0?"+":"")+m;
+const prof = () => Math.ceil(1 + S.level/4);
+const wisMod = () => mod(S.ab.wis);
+const spellDC = () => 8+prof()+wisMod();
+const spellAtk = () => prof()+wisMod();
+const prepMax = () => Math.max(1,S.level+wisMod());
+const cantripDice = () => S.level>=17?4:S.level>=11?3:S.level>=5?2:1;
+const maxCR = () => Math.max(1,Math.floor(S.level/3));
+
+/* ============================== DICE ============================== */
+function rollDie(n){ return 1+Math.floor(Math.random()*n); }
+function rollSpec(count,die,modv){
+  const rolls=[]; for(let i=0;i<count;i++) rolls.push(rollDie(die));
+  const sum=rolls.reduce((a,b)=>a+b,0)+(modv||0);
+  return {rolls,sum};
+}
+let advMode="norm";
+function setDice(title, main, note, rolls){
+  document.getElementById("diceTitle").textContent="🎲 "+title;
+  document.getElementById("diceMain").textContent=main;
+  document.getElementById("diceNote").textContent=note||"";
+  const box=document.getElementById("diceRolls"); box.innerHTML="";
+  (rolls||[]).forEach(r=>{
+    const b=document.createElement("button"); b.className="rollbtn";
+    b.textContent="Tap-roll "+r.label;
+    const res=document.createElement("span"); res.className="rollresult";
+    b.onclick=()=>{
+      let out;
+      if(r.d20 && advMode!=="norm"){
+        const a=rollDie(20),b2=rollDie(20);
+        const pick=advMode==="adv"?Math.max(a,b2):Math.min(a,b2);
+        out={rolls:[a,b2],sum:pick+(r.mod||0),pick};
+        res.innerHTML=`= <b>${out.sum}</b> <small>(${a} &amp; ${b2}, kept ${pick}${r.mod?fmt(r.mod):""})</small>`;
+      }else{
+        out=rollSpec(r.count,r.die,r.mod);
+        res.innerHTML=`= <b>${out.sum}</b> <small>(${out.rolls.join("+")}${r.mod?fmt(r.mod):""})</small>`;
+      }
+      if((r.d20)&&(out.rolls.includes(20)||out.pick===20)) res.innerHTML+=" 🎉 nat 20!";
+      if(navigator.vibrate) navigator.vibrate(30);
+    };
+    box.appendChild(b); box.appendChild(res);
+  });
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ============================== BANNERS ============================== */
+function banners(){
+  const el=document.getElementById("banners"); el.innerHTML="";
+  const add=(cls,icon,title,body,key)=>{
+    if(key && S.dismissed[key]) return;
+    const d=document.createElement("div"); d.className="banner "+cls;
+    d.innerHTML=`<span>${icon}</span><div><b>${title}</b>${body}</div>`;
+    const x=document.createElement("button"); x.className="x"; x.textContent="×";
+    x.onclick=()=>{ if(key){S.dismissed[key]=1;save();} d.remove(); };
+    d.appendChild(x); el.appendChild(d);
+  };
+  if(S.conc) add("info","🧠",`Concentrating: ${S.conc}`,
+    `Only one concentration spell at a time. If you take damage: CON save, DC = 10 or half the damage (whichever is higher), or the spell ends.`);
+  const slotsLeft=[1,2,3].reduce((a,l)=>a+S.slots[l].max-S.slots[l].used,0);
+  const wsLeft=S.ws.max-S.ws.used;
+  if(slotsLeft===0&&wsLeft===0) add("crit","🌙","Time to rest!","No spell slots and no Wild Shapes left. Ask Ben for a long rest — 4 hours of firbolg meditation brings everything back.","rest-empty-"+S.log.length);
+  else if(wsLeft===0) add("warn","🐻","Out of Wild Shapes","A SHORT rest (1 hour) brings both uses back.","ws0-"+S.ws.used+"-"+S.log.length);
+  else if(slotsLeft<=2) add("warn","✨",`Only ${slotsLeft} spell slot${slotsLeft===1?"":"s"} left`,"Consider cheap options: cantrips, Wild Shape, or asking for a rest.","slots-"+slotsLeft+"-"+S.log.length);
+  if(!S.form && S.hp<=Math.floor(S.hpMax/3)) add("crit","💔","HP is low",`You're at ${S.hp}/${S.hpMax}. Wild Shape is a free HP pool — or drink a potion / call for Healing Word.`,"hp-"+S.hp);
+  if(S.timerEnd && Date.now()>=S.timerEnd){
+    add("warn","⏰","Check your resources!","Your reminder timer went off. Look over HP, slots, and Wild Shapes — maybe suggest a rest.",null);
+  }
+}
+
+/* ============================== LOG ============================== */
+function log(msg){
+  S.log.unshift({t:Date.now(),m:msg});
+  if(S.log.length>200)S.log.pop();
+  save(); renderLog();
+}
+function renderLog(){
+  const el=document.getElementById("logList");
+  el.innerHTML=S.log.length?"":"<div class='muted'>Nothing logged yet.</div>";
+  S.log.slice(0,60).forEach(e=>{
+    const d=document.createElement("div"); d.className="logitem";
+    const tm=new Date(e.t);
+    d.innerHTML=`<time>${tm.getHours().toString().padStart(2,"0")}:${tm.getMinutes().toString().padStart(2,"0")}</time>${e.m}`;
+    el.appendChild(d);
+  });
+}
+
+/* ============================== HEADER ============================== */
+function renderHeader(){
+  document.getElementById("charTitle").innerHTML=
+    `${S.name}<small>Level ${S.level} Firbolg · Circle of the Moon Druid</small>`;
+  const hpP=document.getElementById("hpPill");
+  if(S.form){
+    hpP.textContent=`🐾 ${S.formHp} HP (form)`;
+    hpP.className="pill "+(S.formHp<=5?"crit":"");
+  }else{
+    hpP.textContent=`❤️ ${S.hp}/${S.hpMax}`;
+    hpP.className="pill "+(S.hp<=Math.floor(S.hpMax/3)?"crit":S.hp<=Math.floor(S.hpMax*2/3)?"warn":"");
+  }
+  document.getElementById("acPill").textContent=`🛡 AC ${S.form?beast(S.form).ac:S.ac}`;
+  const fp=document.getElementById("formPill");
+  fp.style.display=S.form?"":"none"; fp.textContent="🐻 "+(S.form||"");
+  const cp=document.getElementById("concPill");
+  cp.style.display=S.conc?"":"none"; cp.textContent="🧠 "+(S.conc||"");
+}
+const beast = n => BEASTS.find(b=>b.n===n);
+
+/* ============================== COMBAT TAB ============================== */
+const TURN_HINTS={
+  "Move":"Up to your speed. You can split it around your action.",
+  "Action":"Attack · Cast a spell · Dash · Dodge · Help · Hide · Move Moonbeam",
+  "Bonus action":"Wild Shape! · Healing Word · Hidden Step · move Flaming Sphere · Shillelagh",
+  "Reaction":"Opportunity attack when an enemy leaves your reach (1 per round)"
+};
+function renderTurn(){
+  const el=document.getElementById("turnChips"); el.innerHTML="";
+  Object.keys(TURN_HINTS).forEach(k=>{
+    const b=document.createElement("button");
+    b.className="turnchip"+(S.turn[k]?" used":"");
+    b.innerHTML=`<div class="t">${S.turn[k]?"✓ ":""}${k}</div><div class="h">${TURN_HINTS[k]}</div>`;
+    b.onclick=()=>{S.turn[k]=S.turn[k]?0:1;save();renderTurn();};
+    el.appendChild(b);
+  });
+}
+document.getElementById("newTurnBtn").onclick=()=>{
+  Object.keys(S.turn).forEach(k=>S.turn[k]=0); save(); renderTurn();
+};
+
+function renderCombatForm(){
+  const el=document.getElementById("combatForm");
+  if(!S.form){ el.innerHTML=""; return; }
+  const b=beast(S.form);
+  el.innerHTML=`<h2>Your Attacks — ${b.n}</h2>`;
+  const card=document.createElement("div"); card.className="card beast";
+  b.atks.forEach(a=>{
+    const d=document.createElement("div"); d.className="atk";
+    if(a.hit===undefined){ d.innerHTML=`<b>${a.n}</b> — ${a.note||""}`; }
+    else{
+      d.innerHTML=`<b>${a.n}</b>: roll <b>d20 ${fmt(a.hit)}</b> vs AC → hit: <b>${a.dmg}</b> ${a.dt||""} ${a.note?("· "+a.note):""}`;
+      d.style.cursor="pointer";
+      d.onclick=()=>promptAttack(b,a);
+    }
+    card.appendChild(d);
+  });
+  const t=document.createElement("div"); t.className="muted"; t.textContent="💡 "+b.tip;
+  card.appendChild(t); el.appendChild(card);
+}
+function parseDice(str){ // "2d6+4" → {count,die,mod}
+  const m=str.match(/(\d+)d(\d+)\s*([+-]\s*\d+)?/);
+  if(!m) return null;
+  return {count:+m[1],die:+m[2],mod:m[3]?parseInt(m[3].replace(/\s/g,"")):0};
+}
+function promptAttack(b,a){
+  const dmg=parseDice(a.dmg);
+  const rolls=[{label:`d20 ${fmt(a.hit)}`,count:1,die:20,mod:a.hit,d20:true}];
+  if(dmg) rolls.push({label:`${a.dmg} damage`,...dmg});
+  setDice(`${b.n} — ${a.n}`,
+    `Roll d20 ${fmt(a.hit)} to hit → damage ${a.dmg} ${a.dt||""}`,
+    a.note||"", rolls);
+}
+
+/* checks & saves */
+function renderChecks(){
+  const sl=document.getElementById("saveList"); sl.innerHTML="";
+  ABIL.forEach(a=>{
+    const m=mod(S.ab[a]) + (S.saveProf.includes(a)?prof():0);
+    sl.appendChild(d20Row(ABIL_NAME[a]+" save", m, S.saveProf.includes(a), ()=>{
+      const i=S.saveProf.indexOf(a); i>=0?S.saveProf.splice(i,1):S.saveProf.push(a);
+      save(); renderChecks();
+    }));
+  });
+  const kl=document.getElementById("skillList"); kl.innerHTML="";
+  SKILLS.forEach(([nm,ab])=>{
+    const p=S.skillProf.includes(nm);
+    const m=mod(S.ab[ab])+(p?prof():0);
+    kl.appendChild(d20Row(`${nm} (${ab.toUpperCase()})`, m, p, ()=>{
+      const i=S.skillProf.indexOf(nm); i>=0?S.skillProf.splice(i,1):S.skillProf.push(nm);
+      save(); renderChecks();
+    }));
+  });
+}
+function d20Row(name, m, isProf, toggle){
+  const d=document.createElement("div"); d.className="d20row";
+  const box=document.createElement("button"); box.className="profbox"+(isProf?" on":"");
+  box.onclick=e=>{e.stopPropagation();toggle();};
+  const nm=document.createElement("button"); nm.className="nm"; nm.style.textAlign="left"; nm.textContent=name;
+  const mo=document.createElement("span"); mo.className="mod"; mo.textContent=fmt(m);
+  nm.onclick=()=>setDice(name,`Roll d20 ${fmt(m)}`,
+    advMode!=="norm"?`(${advMode==="adv"?"advantage":"disadvantage"}: roll two d20s, keep the ${advMode==="adv"?"higher":"lower"})`:"",
+    [{label:`d20 ${fmt(m)}`,count:1,die:20,mod:m,d20:true}]);
+  d.append(box,nm,mo);
+  return d;
+}
+document.querySelectorAll(".advchip").forEach(c=>{
+  c.onclick=()=>{advMode=c.dataset.adv;
+    document.querySelectorAll(".advchip").forEach(x=>x.classList.toggle("on",x===c));};
+});
+document.querySelector('.advchip[data-adv="norm"]').classList.add("on");
+
+/* damage / heal */
+function applyDamage(n){
+  if(n<=0)return;
+  let msg;
+  if(S.form){
+    S.formHp-=n;
+    if(S.formHp<=0){
+      const excess=-S.formHp;
+      msg=`Took ${n} as ${S.form} → form drops!`+(excess?` ${excess} carries over to you.`:"");
+      S.form=null;S.formHp=0;S.hp=Math.max(0,S.hp-excess);
+    }else msg=`Took ${n} damage as ${S.form} (${S.formHp} form HP left)`;
+  }else{
+    S.hp=Math.max(0,S.hp-n);
+    msg=`Took ${n} damage (${S.hp}/${S.hpMax})`;
+  }
+  log(msg);
+  if(S.conc){
+    const dc=Math.max(10,Math.floor(n/2));
+    const m=mod(S.ab.con)+(S.saveProf.includes("con")?prof():0);
+    setDice("Concentration check!",
+      `Roll d20 ${fmt(m)} — need ${dc} or ${S.conc} ends`,
+      `CON save. DC = 10 or half the damage taken, whichever is higher.`,
+      [{label:`d20 ${fmt(m)}`,count:1,die:20,mod:m,d20:true}]);
+  }
+  renderAll();
+}
+function applyHeal(n){
+  if(S.form){ log(`Healing in beast form goes to the FORM's HP`); S.formHp=Math.min(beast(S.form).hp,S.formHp+n); }
+  else S.hp=Math.min(S.hpMax,S.hp+n);
+  log(`Healed ${n} HP`); renderAll();
+}
+document.querySelectorAll(".dmgbtn").forEach(b=>b.onclick=()=>applyDamage(+b.dataset.d));
+document.querySelectorAll(".healbtn").forEach(b=>b.onclick=()=>applyHeal(+b.dataset.h));
+document.getElementById("dmgApply").onclick=()=>{
+  const v=+document.getElementById("dmgCustom").value||0;
+  document.getElementById("dmgCustom").value="";
+  applyDamage(v);
+};
+document.getElementById("healBtnQuick").onclick=()=>{
+  const v=prompt("Heal how much?"); if(v)applyHeal(+v||0);
+};
+document.getElementById("fullHeal").onclick=()=>{S.hp=S.hpMax;log("HP restored to full");renderAll();};
+
+/* ============================== SPELLS TAB ============================== */
+let spellFilter={q:"",lvl:"all",prep:true};
+function renderSlots(){
+  const el=document.getElementById("slotCard"); el.innerHTML="";
+  [1,2,3].forEach(l=>{
+    const row=document.createElement("div"); row.className="row spread"; row.style.margin="6px 0";
+    const lab=document.createElement("b"); lab.textContent=`Level ${l}`;
+    const pips=document.createElement("div"); pips.className="pips";
+    for(let i=0;i<S.slots[l].max;i++){
+      const p=document.createElement("button");
+      p.className="pip"+(i<S.slots[l].max-S.slots[l].used?"":" off");
+      p.title="Tap to spend / restore";
+      p.onclick=()=>{
+        const avail=S.slots[l].max-S.slots[l].used;
+        if(i<avail){S.slots[l].used++;log(`Spent a level-${l} slot`);}
+        else {S.slots[l].used=Math.max(0,S.slots[l].used-1);log(`Restored a level-${l} slot`);}
+        save();renderAll();
+      };
+      pips.appendChild(p);
+    }
+    row.append(lab,pips); el.appendChild(row);
+  });
+  const note=document.createElement("div"); note.className="muted";
+  note.innerHTML=`💪 <b>Combat Wild Shape heal:</b> while in beast form, spend a slot as a BONUS action to heal 1d8 per slot level.`;
+  el.appendChild(note);
+}
+function renderLvlChips(){
+  const el=document.getElementById("lvlChips"); el.innerHTML="";
+  [["all","All"],["0","Cantrips"],["1","Level 1"],["2","Level 2"],["3","Level 3"]].forEach(([v,t])=>{
+    const c=document.createElement("button"); c.className="chip"+(spellFilter.lvl===v?" on":"");
+    c.textContent=t; c.onclick=()=>{spellFilter.lvl=v;renderLvlChips();renderSpells();};
+    el.appendChild(c);
+  });
+}
+function renderSpells(){
+  const el=document.getElementById("spellList"); el.innerHTML="";
+  const prepped=SPELLS.filter(s=>s.l>0&&S.prepared.includes(s.n)).length;
+  document.getElementById("prepCount").textContent=
+    `Prepared ${prepped}/${prepMax()} leveled spells · 3 cantrips known · ✓ toggles prepared`;
+  document.getElementById("prepOnly").classList.toggle("on",spellFilter.prep);
+  SPELLS.filter(s=>{
+    if(spellFilter.lvl!=="all"&&s.l!==+spellFilter.lvl)return false;
+    if(spellFilter.prep&&!S.prepared.includes(s.n))return false;
+    if(spellFilter.q&&!s.n.toLowerCase().includes(spellFilter.q))return false;
+    return true;
+  }).forEach(s=>el.appendChild(spellRow(s)));
+  if(!el.children.length) el.innerHTML="<div class='muted' style='padding:12px 0'>No spells match — clear the Prepared filter or search.</div>";
+}
+function diceStr(d,slot,isCantrip){
+  if(!d)return"";
+  let c=d.base[0],die=d.base[1];
+  if(isCantrip&&d.cantrip)c=d.base[0]*cantripDice();
+  if(!isCantrip&&d.per&&slot>0)c+=d.per[0]*slot;
+  return `${c}d${die}`;
+}
+function spellRow(s){
+  const div=document.createElement("div"); div.className="spell";
+  const head=document.createElement("div"); head.className="head";
+  const prep=document.createElement("button"); prep.className="prep"+(S.prepared.includes(s.n)?" on":"");
+  prep.textContent=S.prepared.includes(s.n)?"✓":"";
+  prep.onclick=()=>{
+    const i=S.prepared.indexOf(s.n);
+    i>=0?S.prepared.splice(i,1):S.prepared.push(s.n);
+    save();renderSpells();
+  };
+  const name=document.createElement("button"); name.className="name";
+  name.innerHTML=`${s.n} <span class="muted">· ${s.l===0?"cantrip":"lvl "+s.l}</span>`;
+  name.onclick=()=>{div.classList.toggle("open");};
+  head.append(prep,name);
+  if(s.c){const t=document.createElement("span");t.className="tag conc";t.textContent="conc";head.appendChild(t);}
+  if(s.rit){const t=document.createElement("span");t.className="tag";t.textContent="ritual";head.appendChild(t);}
+  const body=document.createElement("div"); body.className="body";
+  const meta=[s.t,s.r].filter(Boolean).join(" · ");
+  let mech="";
+  if(s.atk)mech=`Attack: d20 ${fmt(spellAtk())} vs AC → ${diceStr(s.dmg,0,s.l===0)} ${s.dt}`;
+  else if(s.save)mech=`Ben rolls: DC ${spellDC()} ${s.save} save${s.dmg?` → ${diceStr(s.dmg,0,s.l===0)} ${s.dt}`:""}`;
+  else if(s.heal)mech=`Heals ${diceStr(s.heal,0)} ${fmt(wisMod())}`;
+  else if(s.shill)mech=`Attack: d20 ${fmt(spellAtk())} → 1d8 ${fmt(wisMod())} bludgeoning`;
+  else if(s.dice)mech=s.dice;
+  body.innerHTML=`<div class="muted">${meta}</div>${mech?`<div style="color:var(--amber);font-weight:700;margin:4px 0">${mech}</div>`:""}<div>${s.d}</div>`;
+  const btns=document.createElement("div"); btns.className="row"; btns.style.marginTop="8px";
+  if(s.l===0){
+    const b=document.createElement("button");b.className="btn small";b.textContent="Cast (free)";
+    b.onclick=()=>castSpell(s,0);btns.appendChild(b);
+  }else{
+    for(let sl=s.l;sl<=3;sl++){
+      const avail=S.slots[sl].max-S.slots[sl].used;
+      const b=document.createElement("button");b.className="btn small"+(avail?"":" sec");
+      b.textContent=sl===s.l?`Cast (slot ${sl})`:`Upcast ${sl}`;
+      if(!avail){b.disabled=true;b.style.opacity=.5;}
+      b.onclick=()=>castSpell(s,sl);
+      btns.appendChild(b);
+      if(!(s.dmg&&s.dmg.per)&&!(s.heal&&s.heal.per)&&!["Fog Cloud","Hold Person"].includes(s.n))break;
+    }
+    if(s.rit){
+      const b=document.createElement("button");b.className="btn sec small";b.textContent="Ritual (no slot, +10 min)";
+      b.onclick=()=>castSpell(s,-1);btns.appendChild(b);
+    }
+  }
+  body.appendChild(btns);
+  div.append(head,body);
+  return div;
+}
+function castSpell(s,slot){
+  if(s.l>0&&slot>0){
+    if(S.slots[slot].used>=S.slots[slot].max)return;
+    S.slots[slot].used++;
+  }
+  if(S.form){log("⚠️ Reminder: you can't cast new spells while in beast form!");}
+  if(s.c){
+    if(S.conc&&S.conc!==s.n)log(`Dropped concentration on ${S.conc} → now concentrating on ${s.n}`);
+    S.conc=s.n;
+  }
+  const upLv=slot>0?slot-s.l:0;
+  const rolls=[];let main="",note="";
+  if(s.atk){
+    const dd=diceStr(s.dmg,upLv,s.l===0),pd=parseDice(dd);
+    main=`Roll d20 ${fmt(spellAtk())} vs AC → hit: ${dd} ${s.dt}`;
+    note=s.atk==="melee"?"Melee spell attack":"Ranged spell attack (disadvantage if an enemy is next to you)";
+    rolls.push({label:`d20 ${fmt(spellAtk())}`,count:1,die:20,mod:spellAtk(),d20:true});
+    if(pd)rolls.push({label:dd+" damage",...pd});
+  }else if(s.save){
+    const dd=s.dmg?diceStr(s.dmg,upLv,s.l===0):"";
+    main=`Ben rolls: DC ${spellDC()} ${s.save} save${dd?` · You roll: ${dd} ${s.dt}`:""}`;
+    note=s.dmg?"Most save spells: full damage on a fail, half on a success — check the spell text.":"";
+    if(dd){const pd=parseDice(dd);if(pd)rolls.push({label:dd+" damage",...pd});}
+  }else if(s.heal){
+    const dd=diceStr(s.heal,upLv);
+    main=`Heal: roll ${dd} ${fmt(wisMod())} HP`;
+    const pd=parseDice(dd);if(pd)rolls.push({label:`${dd} ${fmt(wisMod())}`,...pd,mod:wisMod()});
+  }else if(s.shill){
+    main=`Attacks now: d20 ${fmt(spellAtk())} to hit → 1d8 ${fmt(wisMod())} damage`;
+    rolls.push({label:`d20 ${fmt(spellAtk())}`,count:1,die:20,mod:spellAtk(),d20:true});
+    rolls.push({label:`1d8 ${fmt(wisMod())}`,count:1,die:8,mod:wisMod()});
+  }else{
+    main=s.dice||"No roll — see the spell text below.";note=s.d.slice(0,120);
+  }
+  setDice(`${s.n}${slot>s.l?` (upcast to ${slot})`:slot===-1?" (ritual)":""}`,main,note,rolls);
+  log(`Cast ${s.n}${slot>0&&slot>s.l?` with a level-${slot} slot`:slot===-1?" as a ritual":""}`);
+  renderAll();
+}
+document.getElementById("spellSearch").oninput=e=>{spellFilter.q=e.target.value.toLowerCase();renderSpells();};
+document.getElementById("prepOnly").onclick=()=>{spellFilter.prep=!spellFilter.prep;renderSpells();};
+
+/* ============================== SHAPES TAB ============================== */
+function renderWS(){
+  const el=document.getElementById("wsPips"); el.innerHTML="";
+  for(let i=0;i<S.ws.max;i++){
+    const p=document.createElement("button");
+    p.className="pip"+(i<S.ws.max-S.ws.used?"":" off");
+    p.onclick=()=>{
+      if(i<S.ws.max-S.ws.used){S.ws.used++;log("Spent a Wild Shape use");}
+      else{S.ws.used=Math.max(0,S.ws.used-1);log("Restored a Wild Shape use");}
+      save();renderAll();
+    };
+    el.appendChild(p);
+  }
+  const fp=document.getElementById("formPanel");
+  if(S.form){
+    const b=beast(S.form);
+    const pct=Math.max(0,Math.min(100,S.formHp/b.hp*100));
+    fp.innerHTML=`
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)">
+      <div class="row spread"><b>🐾 You are a ${b.n}</b><span>${S.formHp}/${b.hp} form HP</span></div>
+      <div class="meter ${pct<=33?"crit":pct<=66?"warn":""}"><div style="width:${pct}%"></div></div>
+      <div class="row" style="margin-top:6px">
+        <button class="btn sec small" id="healSlotBtn">💚 Heal: spend slot → 1d8/level</button>
+        <button class="btn small" id="revertBtn">↩️ Revert to firbolg</button>
+      </div>
+      <div class="muted" style="margin-top:6px">At 0 form HP you pop back to firbolg — leftover damage hits your real HP. Reverting early is a bonus action.</div>
+      </div>`;
+    document.getElementById("revertBtn").onclick=()=>{
+      S.form=null;S.formHp=0;log("Reverted to firbolg form (bonus action)");renderAll();
+    };
+    document.getElementById("healSlotBtn").onclick=()=>{
+      const lv=+prompt("Spend which slot level? (1–3)\nHeals 1d8 per level, bonus action.","1");
+      if(!lv||lv<1||lv>3)return;
+      if(S.slots[lv].used>=S.slots[lv].max){alert("No level-"+lv+" slots left!");return;}
+      S.slots[lv].used++;
+      const r=rollSpec(lv,8,0);
+      S.formHp=Math.min(b.hp,S.formHp+r.sum);
+      log(`Combat Wild Shape heal: spent level-${lv} slot, rolled ${r.rolls.join("+")} = ${r.sum} HP`);
+      setDice("Combat Wild Shape heal",`Rolled ${lv}d8 = ${r.sum} HP healed`,"(digital roll — or roll your own and adjust)",[]);
+      renderAll();
+    };
+  }else fp.innerHTML="";
+}
+function renderBeasts(){
+  const el=document.getElementById("beastList"); el.innerHTML="";
+  BEASTS.forEach(b=>{
+    const card=document.createElement("div"); card.className="card beast";
+    const head=document.createElement("div"); head.className="row spread";
+    head.innerHTML=`<b style="font-size:16px">${b.n}</b><span class="tag">CR ${b.cr}</span>`;
+    const stats=document.createElement("div"); stats.className="stats";
+    stats.innerHTML=`<span>🛡 AC ${b.ac}</span><span>❤️ ${b.hp} HP</span><span>👣 ${b.spd}</span>${b.sk?`<span>🎯 ${b.sk}</span>`:""}`;
+    card.append(head,stats);
+    if(b.tr){const t=document.createElement("div");t.className="muted";t.textContent=b.tr;card.appendChild(t);}
+    b.atks.forEach(a=>{
+      const d=document.createElement("div");d.className="atk";
+      d.innerHTML=a.hit===undefined?`<b>${a.n}</b> — ${a.note||""}`:
+        `<b>${a.n}</b>: d20 ${fmt(a.hit)} → ${a.dmg} ${a.dt||""}${a.note?" · "+a.note:""}`;
+      card.appendChild(d);
+    });
+    const tip=document.createElement("div");tip.className="muted";tip.textContent="💡 "+b.tip;card.appendChild(tip);
+    const row=document.createElement("div");row.className="row";row.style.marginTop="8px";
+    const btn=document.createElement("button");btn.className="btn small";btn.textContent="🐾 Transform (bonus action)";
+    btn.onclick=()=>{
+      if(S.ws.used>=S.ws.max){alert("No Wild Shape uses left — take a short rest!");return;}
+      if(S.form){alert("You're already shifted — revert first (bonus action).");return;}
+      S.ws.used++;S.form=b.n;S.formHp=b.hp;
+      log(`🐻 Wild Shape → ${b.n} (bonus action, ${b.hp} form HP)`);
+      setDice(`You are now a ${b.n}!`,
+        b.atks.find(a=>a.hit!==undefined)?`Attacks: ${b.atks.filter(a=>a.hit!==undefined).map(a=>`${a.n} d20 ${fmt(a.hit)} → ${a.dmg}`).join(" · ")}`:"",
+        "You keep your mind & WIS/INT/CHA. No spellcasting, but concentration continues. Check the Combat tab for tap-to-roll attacks.",[]);
+      renderAll();
+      switchTab("combat");
+    };
+    row.appendChild(btn);card.appendChild(row);
+    el.appendChild(card);
+  });
+}
+
+/* ============================== ME TAB ============================== */
+function renderMe(){
+  document.getElementById("nameIn").value=S.name;
+  document.getElementById("lvlIn").value=S.level;
+  document.getElementById("acIn").value=S.ac;
+  document.getElementById("hpMaxIn").value=S.hpMax;
+  document.getElementById("hpBig").textContent=`${S.hp} / ${S.hpMax} HP`;
+  const pct=Math.max(0,Math.min(100,S.hp/S.hpMax*100));
+  const meter=document.getElementById("hpMeter");
+  meter.className="meter "+(pct<=33?"crit":pct<=66?"warn":"");
+  meter.firstElementChild.style.width=pct+"%";
+  document.getElementById("hdCon").textContent=fmt(mod(S.ab.con));
+  /* ability tiles */
+  const at=document.getElementById("abTiles"); at.innerHTML="";
+  ABIL.forEach(a=>{
+    const t=document.createElement("button"); t.className="tile";
+    t.innerHTML=`<div class="v">${fmt(mod(S.ab[a]))}</div><div class="l">${a.toUpperCase()} ${S.ab[a]}</div>`;
+    t.onclick=()=>{
+      const v=prompt(ABIL_NAME[a]+" score:",S.ab[a]);
+      if(v&&+v>0){S.ab[a]=+v;save();renderAll();}
+    };
+    at.appendChild(t);
+  });
+  const dt=document.getElementById("derivedTiles"); dt.innerHTML="";
+  [["Prof",fmt(prof())],["Spell DC",spellDC()],["Spell Atk",fmt(spellAtk())],["Prepare",prepMax()],["Max CR",maxCR()]].forEach(([l,v])=>{
+    const t=document.createElement("div");t.className="tile";
+    t.innerHTML=`<div class="v">${v}</div><div class="l">${l}</div>`;dt.appendChild(t);
+  });
+  /* hit dice */
+  const hd=document.getElementById("hdPips");hd.innerHTML="";
+  for(let i=0;i<S.level;i++){
+    const p=document.createElement("span");p.className="pip"+(i<S.level-S.hd.used?"":" off");
+    p.style.width="14px";p.style.height="14px";hd.appendChild(p);
+  }
+  /* racial */
+  const rc=document.getElementById("racialCard");rc.innerHTML="";
+  const gifts=[
+    {k:"hidden",n:"Hidden Step",d:"BONUS ACTION: turn invisible until the start of your next turn (or until you attack/cast/force a save). 1 per short rest.",use:1},
+    {k:"detect",n:"Firbolg Magic: Detect Magic",d:"Cast Detect Magic free, once per short rest (WIS is your casting ability).",use:1},
+    {k:"disguise",n:"Firbolg Magic: Disguise Self",d:"Cast Disguise Self free, once per short rest — you can appear up to 3 ft shorter, handy for blending in with Medium folk.",use:1},
+    {n:"Speech of Beast and Leaf",d:"You can always talk TO beasts and plants (they understand you; advantage on CHA checks to influence them). Understanding them back needs Speak with Animals/Plants."},
+    {n:"Powerful Build",d:"You count as Large for carrying, dragging, lifting and pushing."}
+  ];
+  gifts.forEach(g=>{
+    const d=document.createElement("div");d.className="atk";
+    d.innerHTML=`<b>${g.n}</b> — ${g.d}`;
+    if(g.use){
+      const b=document.createElement("button");
+      const used=S.racial[g.k];
+      b.className="btn small "+(used?"sec":"");b.style.marginTop="6px";
+      b.textContent=used?"Used (short rest resets)":"Use it";
+      b.disabled=!!used;
+      b.onclick=()=>{S.racial[g.k]=1;log(`Used ${g.n}`);renderAll();};
+      d.appendChild(document.createElement("br"));d.appendChild(b);
+    }
+    rc.appendChild(d);
+  });
+}
+document.getElementById("nameIn").onchange=e=>{S.name=e.target.value;save();renderAll();};
+document.getElementById("lvlIn").onchange=e=>{S.level=Math.max(1,Math.min(20,+e.target.value||6));save();renderAll();};
+document.getElementById("acIn").onchange=e=>{S.ac=+e.target.value||16;save();renderAll();};
+document.getElementById("hpMaxIn").onchange=e=>{S.hpMax=+e.target.value||45;S.hp=Math.min(S.hp,S.hpMax);save();renderAll();};
+document.getElementById("spendHD").onclick=()=>{
+  if(S.hd.used>=S.level){alert("No Hit Dice left — long rest restores half your total.");return;}
+  S.hd.used++;
+  const r=rollSpec(1,8,mod(S.ab.con));
+  S.hp=Math.min(S.hpMax,S.hp+r.sum);
+  log(`Spent a Hit Die: d8${fmt(mod(S.ab.con))} = ${r.sum} HP`);
+  setDice("Hit Die",`Rolled d8 ${fmt(mod(S.ab.con))} = ${r.sum} HP healed`,"(or roll your own d8 and add "+fmt(mod(S.ab.con))+")",[]);
+  renderAll();
+};
+document.getElementById("shortRestBtn").onclick=()=>{
+  S.ws.used=0;S.racial={hidden:0,detect:0,disguise:0};
+  log("🌤 Short rest (1 hour): Wild Shape & firbolg gifts restored. Spend Hit Dice to heal!");
+  S.dismissed={};renderAll();
+};
+document.getElementById("longRestBtn").onclick=()=>{
+  S.ws.used=0;S.racial={hidden:0,detect:0,disguise:0};
+  [1,2,3].forEach(l=>S.slots[l].used=0);
+  S.hp=S.hpMax;S.hd.used=Math.max(0,S.hd.used-Math.max(1,Math.floor(S.level/2)));
+  S.conc=null;S.form=null;S.formHp=0;S.dismissed={};S.timerEnd=null;
+  log("🌙 Long rest: 4 hours of trance meditation. Everything restored — pick today's prepared spells!");
+  renderAll();
+};
+document.getElementById("timerBtn").onclick=()=>{
+  if(S.timerEnd){S.timerEnd=null;log("Reminder timer cancelled");}
+  else{
+    const m=+document.getElementById("timerMin").value||90;
+    S.timerEnd=Date.now()+m*60000;
+    log(`⏰ Reminder set for ${m} minutes from now`);
+  }
+  renderAll();
+};
+setInterval(()=>{
+  const st=document.getElementById("timerStatus");
+  if(!S.timerEnd){st.textContent="";return;}
+  const left=S.timerEnd-Date.now();
+  if(left<=0){
+    st.textContent="⏰ NOW!";
+    if(!S._buzzed){S._buzzed=1;if(navigator.vibrate)navigator.vibrate([200,100,200]);banners();}
+  }else{
+    S._buzzed=0;
+    st.textContent=`fires in ${Math.ceil(left/60000)} min`;
+  }
+  document.getElementById("timerBtn").textContent=S.timerEnd?"Cancel":"Start";
+},2000);
+
+document.getElementById("themeBtn").onclick=()=>{
+  const r=document.documentElement;
+  const cur=r.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+  r.dataset.theme=cur==="dark"?"light":"dark";
+  localStorage.setItem(KEY+".theme",r.dataset.theme);
+};
+(()=>{const t=localStorage.getItem(KEY+".theme");if(t)document.documentElement.dataset.theme=t;})();
+document.getElementById("resetBtn").onclick=()=>{
+  if(confirm("Wipe ALL data (stats, notes, log) and start fresh?")){
+    localStorage.removeItem(KEY);S=load();renderAll();
+  }
+};
+
+/* ============================== NOTES TAB ============================== */
+const notesArea=document.getElementById("notesArea");
+notesArea.value=S.notes;
+notesArea.oninput=()=>{S.notes=notesArea.value;save();};
+function renderParty(){
+  const el=document.getElementById("partyList");el.innerHTML="";
+  S.party.forEach((p,i)=>{
+    const row=document.createElement("div");row.className="partyrow";
+    const n=document.createElement("input");n.placeholder="Name";n.value=p.name;
+    const o=document.createElement("input");o.placeholder="Who are they / notes";o.value=p.note;
+    n.oninput=()=>{p.name=n.value;save();};
+    o.oninput=()=>{p.note=o.value;save();};
+    const x=document.createElement("button");x.className="btn sec small";x.textContent="✕";
+    x.onclick=()=>{S.party.splice(i,1);save();renderParty();};
+    row.append(n,o,x);el.appendChild(row);
+  });
+}
+document.getElementById("addPartyBtn").onclick=()=>{S.party.push({name:"",note:""});save();renderParty();};
+document.getElementById("logAddBtn").onclick=()=>{
+  const v=document.getElementById("logQuick").value.trim();
+  if(v){log("📝 "+v);document.getElementById("logQuick").value="";}
+};
+document.getElementById("logClearBtn").onclick=()=>{
+  if(confirm("Clear the session log?")){S.log=[];save();renderLog();}
+};
+
+/* ============================== TABS & BOOT ============================== */
+function switchTab(t){
+  document.querySelectorAll("main section").forEach(s=>s.classList.toggle("on",s.id==="tab-"+t));
+  document.querySelectorAll("#bottomNav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
+}
+document.querySelectorAll("#bottomNav button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+
+function renderAll(){
+  save();
+  renderHeader();banners();renderTurn();renderCombatForm();renderChecks();
+  renderSlots();renderLvlChips();renderSpells();
+  renderWS();renderBeasts();renderMe();renderParty();renderLog();
+}
+renderAll();
+switchTab("combat");
+</script>
+</body>
+</html>
