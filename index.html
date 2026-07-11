@@ -479,6 +479,16 @@ const BEASTS = [
 
 /* ============================== STATE ============================== */
 const KEY="groveGuide.v1";
+/* storage can be blocked in sandboxed embeds — fall back to in-memory so the app still runs */
+const MEM={};
+const store={
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return k in MEM?MEM[k]:null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} MEM[k]=v; },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} delete MEM[k]; }
+};
+let CAN_SAVE=true;
+try{ localStorage.setItem(KEY+".probe","1"); localStorage.removeItem(KEY+".probe"); }
+catch(e){ CAN_SAVE=false; }
 const DEFAULTS = {
   name:"My Firbolg", level:6,
   ab:{str:12,dex:14,con:14,int:10,wis:18,cha:12},
@@ -494,8 +504,8 @@ const DEFAULTS = {
   timerEnd:null, dismissed:{}
 };
 let S = load();
-function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)); return s?Object.assign(structuredClone(DEFAULTS),s):structuredClone(DEFAULTS);}catch(e){return structuredClone(DEFAULTS);} }
-function save(){ localStorage.setItem(KEY,JSON.stringify(S)); }
+function load(){ try{ const s=JSON.parse(store.get(KEY)); return s?Object.assign(structuredClone(DEFAULTS),s):structuredClone(DEFAULTS);}catch(e){return structuredClone(DEFAULTS);} }
+function save(){ store.set(KEY,JSON.stringify(S)); }
 
 /* derived numbers */
 const mod = s => Math.floor((s-10)/2);
@@ -555,6 +565,8 @@ function banners(){
     x.onclick=()=>{ if(key){S.dismissed[key]=1;save();} d.remove(); };
     d.appendChild(x); el.appendChild(d);
   };
+  if(!CAN_SAVE) add("warn","💾","Heads up: this view can't save",
+    "Everything works, but stats and notes reset if you close the page. To keep your data, add this page to your home screen or keep the tab open during the game.","nosave");
   if(S.conc) add("info","🧠",`Concentrating: ${S.conc}`,
     `Only one concentration spell at a time. If you take damage: CON save, DC = 10 or half the damage (whichever is higher), or the spell ends.`);
   const slotsLeft=[1,2,3].reduce((a,l)=>a+S.slots[l].max-S.slots[l].used,0);
@@ -1073,12 +1085,12 @@ document.getElementById("themeBtn").onclick=()=>{
   const r=document.documentElement;
   const cur=r.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
   r.dataset.theme=cur==="dark"?"light":"dark";
-  localStorage.setItem(KEY+".theme",r.dataset.theme);
+  store.set(KEY+".theme",r.dataset.theme);
 };
-(()=>{const t=localStorage.getItem(KEY+".theme");if(t)document.documentElement.dataset.theme=t;})();
+(()=>{const t=store.get(KEY+".theme");if(t)document.documentElement.dataset.theme=t;})();
 document.getElementById("resetBtn").onclick=()=>{
   if(confirm("Wipe ALL data (stats, notes, log) and start fresh?")){
-    localStorage.removeItem(KEY);S=load();renderAll();
+    store.del(KEY);S=load();renderAll();
   }
 };
 
