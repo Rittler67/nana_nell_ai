@@ -193,6 +193,7 @@ details.ref summary{font-weight:700;cursor:pointer;padding:4px 0}
   <span class="pill" id="acPill"></span>
   <span class="pill" id="formPill" style="display:none"></span>
   <span class="pill" id="concPill" style="display:none"></span>
+  <button class="pill" id="copyBtn" title="Copy my status to share with Claude">📋 Copy for Claude</button>
 </div></header>
 
 <div id="diceBar"><div class="wrap">
@@ -224,6 +225,7 @@ details.ref summary{font-weight:700;cursor:pointer;padding:4px 0}
     <div id="trayOut"></div>
     <div class="trayactions">
       <button class="btn small" id="trayReroll">🎲 Roll it all again</button>
+      <button class="btn sec small" id="trayLog">📓 Log roll</button>
       <button class="btn sec small" id="trayClear">Clear</button>
     </div>
   </div>
@@ -593,6 +595,7 @@ function setDice(title, main, note, rolls){
         res.innerHTML=`= <b>${out.sum}</b> <small>(${out.rolls.join("+")}${r.mod?fmt(r.mod):""})</small>`;
       }
       if((r.d20)&&(out.rolls.includes(20)||out.pick===20)) res.innerHTML+=" 🎉 nat 20!";
+      log(`🎲 ${title} — ${r.label}: ${out.sum}`);
       if(navigator.vibrate) navigator.vibrate(30);
     };
     box.appendChild(b); box.appendChild(res);
@@ -629,6 +632,11 @@ document.getElementById("trayReroll").onclick=()=>{
   renderTray();
 };
 document.getElementById("trayClear").onclick=()=>{tray.dice=[];tray.mod=0;renderTray();};
+document.getElementById("trayLog").onclick=()=>{
+  if(!tray.dice.length)return;
+  const sum=tray.dice.reduce((a,d)=>a+d.val,0)+tray.mod;
+  log(`🎲 Rolled ${tray.dice.map(d=>"d"+d.die).join("+")}${tray.mod?fmt(tray.mod):""} = ${sum}`);
+};
 function renderTray(){
   document.getElementById("trayMod").textContent=fmt(tray.mod);
   const out=document.getElementById("trayOut");
@@ -1205,6 +1213,43 @@ document.getElementById("logAddBtn").onclick=()=>{
 };
 document.getElementById("logClearBtn").onclick=()=>{
   if(confirm("Clear the session log?")){S.log=[];save();renderLog();}
+};
+
+/* ============================== SHARE STATUS ============================== */
+function statusText(){
+  const slots=[1,2,3].map(l=>`L${l} ${S.slots[l].max-S.slots[l].used}/${S.slots[l].max}`).join(", ");
+  const gifts=[["Hidden Step","hidden"],["Detect Magic","detect"],["Disguise Self","disguise"]]
+    .map(([n,k])=>`${n}: ${S.racial[k]?"used":"available"}`).join("; ");
+  const prepped=SPELLS.filter(x=>x.l>0&&S.prepared.includes(x.n)).map(x=>x.n).join(", ");
+  const logLines=S.log.slice(0,12).map(e=>{
+    const t=new Date(e.t);
+    return `- ${t.getHours().toString().padStart(2,"0")}:${t.getMinutes().toString().padStart(2,"0")} ${e.m}`;
+  }).join("\n");
+  return `MY D&D STATUS (from Grove Guide dashboard)
+Character: ${S.name}, level ${S.level} firbolg Circle of the Moon druid
+HP: ${S.hp}/${S.hpMax}, AC ${S.ac}${S.form?` — currently Wild Shaped: ${S.form} with ${S.formHp}/${beast(S.form).hp} form HP (AC ${beast(S.form).ac})`:""}
+Concentrating on: ${S.conc||"nothing"}
+Spell slots left: ${slots} | Wild Shape: ${S.ws.max-S.ws.used}/${S.ws.max} | Hit Dice: ${S.level-S.hd.used}/${S.level}
+Firbolg gifts — ${gifts}
+Spell save DC ${spellDC()}, spell attack ${fmt(spellAtk())}, WIS ${fmt(wisMod())}
+Abilities: ${ABIL.map(a=>a.toUpperCase()+" "+S.ab[a]+" ("+fmt(mod(S.ab[a]))+")").join(", ")}
+Prepared spells: ${prepped}
+Recent events:
+${logLines||"- (nothing logged yet)"}`;
+}
+document.getElementById("copyBtn").onclick=async()=>{
+  const txt=statusText(),btn=document.getElementById("copyBtn");
+  let ok=false;
+  try{ await navigator.clipboard.writeText(txt); ok=true; }
+  catch(e){
+    const ta=document.createElement("textarea");
+    ta.value=txt; document.body.appendChild(ta); ta.select();
+    try{ ok=document.execCommand("copy"); }catch(e2){}
+    ta.remove();
+  }
+  btn.textContent=ok?"✓ Copied — paste to Claude":"📋 Copy failed";
+  if(!ok) prompt("Copy this text:",txt);
+  setTimeout(()=>btn.textContent="📋 Copy for Claude",2500);
 };
 
 /* ============================== TABS & BOOT ============================== */
