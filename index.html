@@ -76,8 +76,27 @@ h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute
 .rollrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .rollbtn{background:var(--surface);border:1.5px solid var(--amber);color:var(--amber);border-radius:10px;padding:8px 12px;font-weight:700;font-size:15px}
 .rollbtn:active{transform:scale(.97)}
-.rollresult{font-size:15px;font-weight:700;padding:8px 4px}
-.rollresult small{font-weight:400;color:var(--muted)}
+.rollresult{font-size:18px;font-weight:800;padding:8px 4px}
+.rollresult small{font-weight:400;color:var(--muted);font-size:13px}
+
+/* dice tray */
+#trayToggle{margin-top:10px;font-weight:800;color:var(--amber);font-size:15px;display:flex;align-items:center;gap:6px}
+#diceTray{display:none;border-top:1px dashed var(--amber-line);margin-top:10px;padding-top:10px}
+#diceTray.open{display:block}
+.trayhint{font-size:13px;color:var(--ink2);margin-bottom:8px}
+.diebtns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.diebtn{background:var(--surface);border:1.5px solid var(--amber);color:var(--amber);border-radius:12px;padding:14px 0;font-weight:800;font-size:17px}
+.diebtn:active{transform:scale(.95)}
+.diebtn.d20a{font-size:13px;line-height:1.2}
+.modrow{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.modbtn{background:var(--surface);border:1px solid var(--amber-line);border-radius:10px;padding:10px 14px;font-weight:800;font-size:15px}
+#trayMod{font-weight:800;font-size:17px;min-width:74px;text-align:center}
+#trayOut{margin-top:10px}
+.diechip{display:inline-block;background:var(--surface);border:1px solid var(--amber-line);border-radius:8px;padding:5px 9px;font-weight:700;font-size:14px;margin:2px 3px 2px 0}
+.diechip small{color:var(--muted);font-weight:400}
+#trayTotal{font-size:38px;font-weight:800;line-height:1.1}
+#trayMath{font-size:14px;color:var(--ink2);margin-top:2px}
+.trayactions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 
 /* banners */
 .banner{display:flex;gap:8px;align-items:flex-start;border-radius:10px;padding:10px 12px;margin:10px 0;font-size:14px;border:1px solid}
@@ -181,6 +200,33 @@ details.ref summary{font-weight:700;cursor:pointer;padding:4px 0}
   <div id="diceMain">Pick a spell, attack, or check below</div>
   <div id="diceNote"></div>
   <div class="rollrow" id="diceRolls"></div>
+  <button id="trayToggle">🎲 Dice tray — tap dice, I do the math <span id="trayArrow">▾</span></button>
+  <div id="diceTray">
+    <div class="trayhint">Tap each die you'd normally pick up (tap d6 twice for 2d6). Set the "+ number" your sheet says. The total is done for you.</div>
+    <div class="diebtns">
+      <button class="diebtn" data-die="4">d4</button>
+      <button class="diebtn" data-die="6">d6</button>
+      <button class="diebtn" data-die="8">d8</button>
+      <button class="diebtn" data-die="10">d10</button>
+      <button class="diebtn" data-die="12">d12</button>
+      <button class="diebtn" data-die="20">d20</button>
+      <button class="diebtn d20a" data-adv="adv">d20<br>Advantage</button>
+      <button class="diebtn d20a" data-adv="dis">d20<br>Disadvantage</button>
+    </div>
+    <div class="modrow">
+      <span class="muted">Add:</span>
+      <button class="modbtn" data-m="-5">−5</button>
+      <button class="modbtn" data-m="-1">−1</button>
+      <span id="trayMod">+0</span>
+      <button class="modbtn" data-m="1">+1</button>
+      <button class="modbtn" data-m="5">+5</button>
+    </div>
+    <div id="trayOut"></div>
+    <div class="trayactions">
+      <button class="btn small" id="trayReroll">🎲 Roll it all again</button>
+      <button class="btn sec small" id="trayClear">Clear</button>
+    </div>
+  </div>
 </div></div>
 </div>
 
@@ -552,6 +598,47 @@ function setDice(title, main, note, rolls){
     box.appendChild(b); box.appendChild(res);
   });
   window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ============================== DICE TRAY ============================== */
+const tray={dice:[],mod:0};
+document.getElementById("trayToggle").onclick=()=>{
+  const t=document.getElementById("diceTray");
+  t.classList.toggle("open");
+  document.getElementById("trayArrow").textContent=t.classList.contains("open")?"▴":"▾";
+};
+document.querySelectorAll(".diebtn[data-die]").forEach(b=>b.onclick=()=>{
+  const d=+b.dataset.die;
+  tray.dice.push({die:d,val:rollDie(d)});
+  if(navigator.vibrate)navigator.vibrate(30);
+  renderTray();
+});
+document.querySelectorAll(".diebtn[data-adv]").forEach(b=>b.onclick=()=>{
+  const a=rollDie(20),c=rollDie(20),adv=b.dataset.adv==="adv";
+  tray.dice.push({die:20,val:adv?Math.max(a,c):Math.min(a,c),note:`${adv?"adv":"dis"}: rolled ${a} & ${c}`});
+  if(navigator.vibrate)navigator.vibrate(30);
+  renderTray();
+});
+document.querySelectorAll(".modbtn").forEach(b=>b.onclick=()=>{tray.mod+=+b.dataset.m;renderTray();});
+document.getElementById("trayReroll").onclick=()=>{
+  tray.dice=tray.dice.map(d=>d.note
+    ?(()=>{const a=rollDie(20),c=rollDie(20),adv=d.note.startsWith("adv");
+       return {die:20,val:adv?Math.max(a,c):Math.min(a,c),note:`${adv?"adv":"dis"}: rolled ${a} & ${c}`};})()
+    :{die:d.die,val:rollDie(d.die)});
+  if(navigator.vibrate)navigator.vibrate(30);
+  renderTray();
+};
+document.getElementById("trayClear").onclick=()=>{tray.dice=[];tray.mod=0;renderTray();};
+function renderTray(){
+  document.getElementById("trayMod").textContent=fmt(tray.mod);
+  const out=document.getElementById("trayOut");
+  if(!tray.dice.length&&!tray.mod){out.innerHTML="";return;}
+  const chips=tray.dice.map(d=>
+    `<span class="diechip">d${d.die} → <b>${d.val}</b>${d.note?` <small>(${d.note})</small>`:""}${d.die===20&&d.val===20?" 🎉":""}${d.die===20&&d.val===1?" 💀":""}</span>`
+  ).join("");
+  const sum=tray.dice.reduce((a,d)=>a+d.val,0)+tray.mod;
+  const math=[...tray.dice.map(d=>d.val),...(tray.mod?[fmt(tray.mod)]:[])].join(" + ").replace("+ +","+ ").replace("+ -","− ");
+  out.innerHTML=`${chips}<div id="trayTotal">${tray.dice.length?sum:fmt(tray.mod)}</div><div id="trayMath">${tray.dice.length?math+" = "+sum:"(no dice yet — tap some above)"}</div>`;
 }
 
 /* ============================== BANNERS ============================== */
