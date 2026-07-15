@@ -316,7 +316,7 @@ details.ref summary{font-weight:700;cursor:pointer;padding:4px 0}
       <button class="btn sec" id="shortRestBtn">🌤 Short Rest</button>
       <button class="btn" id="longRestBtn">🌙 Long Rest</button>
     </div>
-    <div class="muted" style="margin-top:6px">Firbolgs don't sleep — a long rest is <b>4 hours of trance-like meditation</b>. Short rest: spend Hit Dice (d8 + CON each) to heal, and Wild Shape &amp; firbolg gifts come back.</div>
+    <div class="muted" style="margin-top:6px">Long rest = <b>8 hours</b> (sleep or light activity — the 4-hour no-sleep trance is an ELF trait, not firbolg). Short rest = 1 hour: spend Hit Dice (d8 + CON each) to heal, and Wild Shape &amp; firbolg gifts come back.</div>
     <div class="row" style="margin-top:10px">
       <span class="muted">Hit Dice (short rest healing):</span>
       <div class="pips" id="hdPips"></div>
@@ -658,7 +658,7 @@ function banners(){
     `Only one concentration spell at a time. If you take damage: CON save, DC = 10 or half the damage (whichever is higher), or the spell ends.`);
   const slotsLeft=[1,2,3].reduce((a,l)=>a+S.slots[l].max-S.slots[l].used,0);
   const wsLeft=S.ws.max-S.ws.used;
-  if(slotsLeft===0&&wsLeft===0) add("crit","🌙","Time to rest!","No spell slots and no Wild Shapes left. Ask Ben for a long rest — 4 hours of firbolg meditation brings everything back.","rest-empty-"+S.log.length);
+  if(slotsLeft===0&&wsLeft===0) add("crit","🌙","Time to rest!","No spell slots and no Wild Shapes left. Ask Ben for a long rest (8 hours) to bring everything back.","rest-empty-"+S.log.length);
   else if(wsLeft===0) add("warn","🐻","Out of Wild Shapes","A SHORT rest (1 hour) brings both uses back.","ws0-"+S.ws.used+"-"+S.log.length);
   else if(slotsLeft<=2) add("warn","✨",`Only ${slotsLeft} spell slot${slotsLeft===1?"":"s"} left`,"Consider cheap options: cantrips, Wild Shape, or asking for a rest.","slots-"+slotsLeft+"-"+S.log.length);
   if(!S.form && S.hp<=Math.floor(S.hpMax/3)) add("crit","💔","HP is low",`You're at ${S.hp}/${S.hpMax}. Wild Shape is a free HP pool — or drink a potion / call for Healing Word.`,"hp-"+S.hp);
@@ -1142,7 +1142,7 @@ document.getElementById("longRestBtn").onclick=()=>{
   [1,2,3].forEach(l=>S.slots[l].used=0);
   S.hp=S.hpMax;S.hd.used=Math.max(0,S.hd.used-Math.max(1,Math.floor(S.level/2)));
   S.conc=null;S.form=null;S.formHp=0;S.dismissed={};S.timerEnd=null;
-  log("🌙 Long rest: 4 hours of trance meditation. Everything restored — pick today's prepared spells!");
+  log("🌙 Long rest (8 hours). Everything restored — pick today's prepared spells!");
   renderAll();
 };
 document.getElementById("timerBtn").onclick=()=>{
