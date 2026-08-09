@@ -19,7 +19,7 @@ phone's browser and survives closing the tab.
 | Tab | What it does |
 |-----|--------------|
 | ⚔️ **Combat** | Turn checklist (action/bonus/move/reaction), your beast attacks when shifted, every save & skill check with your modifier, quick damage-in buttons with automatic concentration-check prompts |
-| ✨ **Spells** | All SRD druid spells (cantrips–level 3) with search, prepared toggles, slot pips, and a **Cast** button that shows exactly what to roll (and spends the slot) |
+| ✨ **Spells** | The full druid class spell list — PHB, Xanathar's, and Tasha's, cantrips–level 3 (all castable at level 6) — with search, prepared toggles, slot pips, and a **Cast** button that shows exactly what to roll (and spends the slot) |
 | 🐻 **Shapes** | 12 curated Wild Shape forms (CR ≤ 2) with AC, HP, attacks, tactics tips; transform tracks form HP separately, carry-over damage handled by the rules |
 | 🧙 **Me** | Editable ability scores, HP, AC; derived spell DC / spell attack / prep count; short & long rest buttons; hit dice; rest reminder timer; firbolg racial gifts |
 | 📓 **Notes** | Free-form notes, party & NPC name list, timestamped session log |

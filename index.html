@@ -412,7 +412,7 @@ const SKILLS = [
  ["Nature","int"],["Arcana","int"],["Investigation","int"],["Persuasion","cha"],["Intimidation","cha"]
 ];
 
-/* Spells: SRD druid spells, levels 0–3.
+/* Spells: full druid class list (PHB/XGtE/TCoE/Strixhaven), levels 0–3.
    dmg/heal use {base, per} dice; cantrip dice scale with character level.
    save = ability Ben rolls against your DC; atk = you roll d20 + spell attack. */
 const SPELLS = [
@@ -422,7 +422,7 @@ const SPELLS = [
  {n:"Poison Spray",l:0,t:"Action",r:"10 ft",save:"CON",dmg:{base:[1,12],cantrip:1},dt:"poison",d:"Puff of gas. On a failed save the target takes the damage; nothing on a success."},
  {n:"Produce Flame",l:0,t:"Action",r:"30 ft",atk:"ranged",dmg:{base:[1,8],cantrip:1},dt:"fire",d:"Flame in your palm: sheds light 10 ft, or hurl it as a ranged spell attack."},
  {n:"Resistance",l:0,t:"Action",r:"Touch",c:1,d:"Touch a willing creature: it adds 1d4 to one saving throw before the spell ends (1 min).",dice:"1d4 bonus to a save"},
- {n:"Shillelagh",l:0,t:"Bonus action",r:"Touch",d:"Your club/quarterstaff attacks use WISDOM and deal 1d8. Attack: d20 + spell attack; damage 1d8 + WIS.",shill:1},
+ {n:"Shillelagh",l:0,t:"Bonus action",r:"Touch",d:"Your club/quarterstaff attacks use WISDOM and deal 1d8. Attack: d20 + spell attack; damage 1d8 + WIS.",ww:8},
  {n:"Thorn Whip",l:0,t:"Action",r:"30 ft",atk:"melee",dmg:{base:[1,6],cantrip:1},dt:"piercing",d:"Vine whip: on a hit, pull a Large-or-smaller target 10 ft closer to you."},
 
  {n:"Animal Friendship",l:1,t:"Action",r:"30 ft",save:"WIS",d:"Convince a beast (INT ≤ 3) you mean no harm; charmed 24 hours on a failed save."},
@@ -469,7 +469,40 @@ const SPELLS = [
  {n:"Water Breathing",l:3,t:"Action",r:"30 ft",rit:1,d:"Up to 10 creatures breathe underwater for 24 hours. Ritual — no slot needed."},
  {n:"Water Walk",l:3,t:"Action",r:"30 ft",rit:1,d:"Up to 10 creatures walk on liquid for 1 hour. Ritual."},
  {n:"Wind Wall",l:3,t:"Action",r:"120 ft",save:"STR",c:1,dmg:{base:[3,8]},dt:"bludgeoning",d:"Wall of wind 50 ft long, 15 ft high: 3d8 on a failed save (half on success). Arrows and gases can't cross it. Keeps flyers honest."}
+,
+ {n:"Control Flames",l:0,t:"Action",r:"60 ft",d:"Shape nonmagical fire: spread it 5 ft, snuff it, double or halve its light. No damage."},
+ {n:"Create Bonfire",l:0,t:"Action",r:"60 ft",c:1,save:"DEX",dmg:{base:[1,8],cantrip:1},dt:"fire",d:"Conjure a bonfire in a 5-ft cube: a creature there when it appears, or entering it / ending its turn there, saves or burns."},
+ {n:"Frostbite",l:0,t:"Action",r:"60 ft",save:"CON",dmg:{base:[1,6],cantrip:1},dt:"cold",d:"On a failed save the target also has DISADVANTAGE on its next weapon attack this turn."},
+ {n:"Gust",l:0,t:"Action",r:"30 ft",save:"STR",d:"Push a Medium-or-smaller creature 5 ft on a failed save, shove a 5-lb object 10 ft, or make a harmless breeze."},
+ {n:"Infestation",l:0,t:"Action",r:"30 ft",save:"CON",dmg:{base:[1,6],cantrip:1},dt:"poison",d:"Swarm of biting bugs: on a fail the target takes the damage and moves 5 ft in a RANDOM direction (roll a d4)."},
+ {n:"Magic Stone",l:0,t:"Bonus action",r:"Touch",ww:6,d:"BONUS ACTION: charge up to 3 pebbles. Anyone can throw or sling one (range 60 ft) using YOUR spell attack; hit = 1d6 + your WIS. Hand them to the party!"},
+ {n:"Mold Earth",l:0,t:"Action",r:"30 ft",d:"Excavate or shape a 5-ft cube of loose earth, or turn ground into difficult terrain (or clear it)."},
+ {n:"Primal Savagery",l:0,t:"Action",r:"Self",atk:"melee",dmg:{base:[1,10],cantrip:1},dt:"acid",d:"Your teeth or nails sharpen for one wicked strike — your hardest-hitting cantrip in melee, no Wild Shape needed."},
+ {n:"Shape Water",l:0,t:"Action",r:"30 ft",d:"Move, shape, color, or FREEZE a 5-ft cube of water. Endlessly creative — ice steps, dammed streams, drained pools."},
+ {n:"Thunderclap",l:0,t:"Action",r:"Self (5 ft)",save:"CON",dmg:{base:[1,6],cantrip:1},dt:"thunder",d:"Boom! Every creature within 5 ft of you saves or takes the damage. Audible 100 ft away."},
+ {n:"Absorb Elements",l:1,t:"Reaction",r:"Self",d:"REACTION when acid/cold/fire/lightning/thunder damage hits you: take HALF of it, and your next melee hit deals +1d6 of that type. +1d6 per slot level.",dice:"resistance + 1d6 rider"},
+ {n:"Beast Bond",l:1,t:"Action",r:"Touch",c:1,d:"Telepathic link with a friendly beast: it gains ADVANTAGE on attacks against creatures within 5 ft of you."},
+ {n:"Detect Poison and Disease",l:1,t:"Action",r:"Self",c:1,rit:1,d:"Sense poisons, poisonous creatures, and diseases within 30 ft. Ritual."},
+ {n:"Earth Tremor",l:1,t:"Action",r:"Self (10 ft)",save:"DEX",dmg:{base:[1,6],per:[1,6]},dt:"bludgeoning",d:"The ground shakes around you: failed save = damage and knocked PRONE. The area becomes difficult terrain."},
+ {n:"Ice Knife",l:1,t:"Action",r:"60 ft",atk:"ranged",dmg:{base:[1,10]},dt:"piercing",d:"Attack: 1d10 piercing on a hit. Then — HIT OR MISS — it explodes: target and everyone within 5 ft saves DEX or takes 2d6 cold (+1d6 cold per slot level)."},
+ {n:"Snare",l:1,t:"1 minute",r:"Touch",d:"Rig a 5-ft rope trap (takes 1 minute): first creature to step in saves DEX or is hoisted upside down and RESTRAINED."},
+ {n:"Air Bubble",l:2,t:"Action",r:"60 ft",d:"A creature gets a bubble of fresh air around its head for 24 hours. Underwater problems, solved — pairs with your Giant Octopus form."},
+ {n:"Beast Sense",l:2,t:"Action",r:"Touch",c:1,rit:1,d:"See and hear through a willing beast's senses. Ritual — great with a scouting companion."},
+ {n:"Dust Devil",l:2,t:"Action",r:"60 ft",c:1,save:"STR",dmg:{base:[1,8],per:[1,8]},dt:"bludgeoning",d:"5-ft whirlwind: a creature ending its turn within 5 ft saves or takes damage and is pushed 10 ft. BONUS ACTION to move it 30 ft."},
+ {n:"Earthbind",l:2,t:"Action",r:"300 ft",c:1,save:"STR",d:"Yank a flyer from the sky: failed save = fly speed 0 and it sinks 60 ft per round. Your anti-air answer until you get flying forms at level 8."},
+ {n:"Flame Blade",l:2,t:"Bonus action",r:"Self",c:1,atk:"melee",dmg:{base:[3,6]},dt:"fire",d:"BONUS ACTION: fiery scimitar in your hand. Attack with it as an action: melee spell attack, 3d6 fire. Sheds light 10 ft. +1d6 per TWO slot levels."},
+ {n:"Healing Spirit",l:2,t:"Bonus action",r:"60 ft",c:1,heal:{base:[1,6],per:[1,6]},d:"BONUS ACTION: a nature spirit fills a 5-ft cube. A creature entering it or starting its turn there heals 1d6 — up to 1 + your WIS mod times total. BONUS ACTION to move it. Amazing between fights."},
+ {n:"Locate Animals or Plants",l:2,t:"Action",r:"Self",rit:1,d:"Learn direction and distance to the nearest beast or plant of a kind you name, within 5 miles. Ritual."},
+ {n:"Skywrite",l:2,t:"Action",r:"Sight",c:1,rit:1,d:"Write up to ten words in the sky with clouds. Ritual."},
+ {n:"Warding Wind",l:2,t:"Action",r:"Self",c:1,d:"Strong wind swirls 10 ft around you: deafens, snuffs flames, disperses gas, difficult terrain for enemies approaching, and ranged weapon attacks at you have DISADVANTAGE."},
+ {n:"Wither and Bloom",l:2,t:"Action",r:"60 ft",save:"CON",dmg:{base:[2,6],per:[1,6]},dt:"necrotic",d:"10-ft radius of decay: creatures you CHOOSE save or take necrotic (half on success) — allies safe. Plus: one creature in the area may spend a Hit Die to heal."},
+ {n:"Erupting Earth",l:3,t:"Action",r:"120 ft",save:"DEX",dmg:{base:[3,12],per:[1,12]},dt:"bludgeoning",d:"A 20-ft cube of ground erupts: save for half. Area becomes difficult terrain until cleared. Big dice!"},
+ {n:"Feign Death",l:3,t:"Action",r:"Touch",rit:1,d:"A willing creature appears convincingly dead for up to an hour. Ritual."},
+ {n:"Flame Arrows",l:3,t:"Action",r:"Touch",c:1,d:"Touch a quiver: 12 pieces of ammunition deal +1d6 fire on hit. Hand it to the party archer and take credit."},
+ {n:"Tidal Wave",l:3,t:"Action",r:"120 ft",save:"DEX",dmg:{base:[4,8]},dt:"bludgeoning",d:"A 30-ft-wide wave crashes down: failed save = 4d8 and knocked PRONE; success = half and stays up. Douses fires."},
+ {n:"Wall of Water",l:3,t:"Action",r:"60 ft",c:1,d:"30-ft wall of living water: ranged weapon attacks through it have DISADVANTAGE, fire damage through it is HALVED. Freeze sections with cold."}
 ];
+SPELLS.sort((a,b)=>a.l-b.l||a.n.localeCompare(b.n));
 
 /* Beast forms — SRD 5.1 stat blocks, CR ≤ 2, no fly speed (Moon druid level 6). */
 const BEASTS = [
@@ -924,7 +957,7 @@ function spellRow(s){
   if(s.atk)mech=`Attack: d20 ${fmt(spellAtk())} vs AC → ${diceStr(s.dmg,0,s.l===0)} ${s.dt}`;
   else if(s.save)mech=`Ben rolls: DC ${spellDC()} ${s.save} save${s.dmg?` → ${diceStr(s.dmg,0,s.l===0)} ${s.dt}`:""}`;
   else if(s.heal)mech=`Heals ${diceStr(s.heal,0)} ${fmt(wisMod())}`;
-  else if(s.shill)mech=`Attack: d20 ${fmt(spellAtk())} → 1d8 ${fmt(wisMod())} bludgeoning`;
+  else if(s.ww)mech=`Attack: d20 ${fmt(spellAtk())} → 1d${s.ww} ${fmt(wisMod())} bludgeoning`;
   else if(s.dice)mech=s.dice;
   body.innerHTML=`<div class="muted">${meta}</div>${mech?`<div style="color:var(--amber);font-weight:700;margin:4px 0">${mech}</div>`:""}<div>${s.d}</div>`;
   const btns=document.createElement("div"); btns.className="row"; btns.style.marginTop="8px";
@@ -939,7 +972,7 @@ function spellRow(s){
       if(!avail){b.disabled=true;b.style.opacity=.5;}
       b.onclick=()=>castSpell(s,sl);
       btns.appendChild(b);
-      if(!(s.dmg&&s.dmg.per)&&!(s.heal&&s.heal.per)&&!["Fog Cloud","Hold Person"].includes(s.n))break;
+      if(!(s.dmg&&s.dmg.per)&&!(s.heal&&s.heal.per)&&!["Fog Cloud","Hold Person","Ice Knife","Absorb Elements"].includes(s.n))break;
     }
     if(s.rit){
       const b=document.createElement("button");b.className="btn sec small";b.textContent="Ritual (no slot, +10 min)";
@@ -977,10 +1010,10 @@ function castSpell(s,slot){
     const dd=diceStr(s.heal,upLv);
     main=`Heal: roll ${dd} ${fmt(wisMod())} HP`;
     const pd=parseDice(dd);if(pd)rolls.push({label:`${dd} ${fmt(wisMod())}`,...pd,mod:wisMod()});
-  }else if(s.shill){
-    main=`Attacks now: d20 ${fmt(spellAtk())} to hit → 1d8 ${fmt(wisMod())} damage`;
+  }else if(s.ww){
+    main=`Attacks now: d20 ${fmt(spellAtk())} to hit → 1d${s.ww} ${fmt(wisMod())} damage`;
     rolls.push({label:`d20 ${fmt(spellAtk())}`,count:1,die:20,mod:spellAtk(),d20:true});
-    rolls.push({label:`1d8 ${fmt(wisMod())}`,count:1,die:8,mod:wisMod()});
+    rolls.push({label:`1d${s.ww} ${fmt(wisMod())}`,count:1,die:s.ww,mod:wisMod()});
   }else{
     main=s.dice||"No roll — see the spell text below.";note=s.d.slice(0,120);
   }
